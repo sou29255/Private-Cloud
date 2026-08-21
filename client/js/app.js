@@ -2067,6 +2067,7 @@ function renderGallery(photos) {
   photos.forEach((photo, index) => {
     const card = document.createElement('div');
     card.className = photo.isVideo ? 'photo-card is-video-card' : 'photo-card';
+    if (isTrashView) card.classList.add('is-trash-card');
     if (photo.isVideo) {
       card.style.animationDelay = `${Math.min(index * 0.05, 0.6)}s`;
     }
@@ -2103,9 +2104,9 @@ function renderGallery(photos) {
         <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
           <input type="checkbox" class="photo-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleSelectPhoto('${photoId}')" />
           ${isTrashView ? `
-            <div style="display:flex; gap:6px;">
-              <button class="btn-icon" style="width:30px; height:30px; font-size:13px; background:rgba(0,230,118,0.25); border:1px solid rgba(0,230,118,0.6); color:#00e676;" onclick="event.stopPropagation(); restorePhoto('${photoId}', event)" title="Restore to Gallery">🔄</button>
-              <button class="btn-icon" style="width:30px; height:30px; font-size:13px; background:rgba(255,23,68,0.25); border:1px solid rgba(255,23,68,0.6); color:#ff1744;" onclick="event.stopPropagation(); permanentlyDeletePhoto('${photoId}', event)" title="Permanently Delete">💥</button>
+            <div style="display:flex; gap:6px; z-index:10;">
+              <button class="btn-icon" style="width:34px; height:34px; font-size:14px; background:rgba(0,230,118,0.35); border:1px solid rgba(0,230,118,0.8); color:#00e676; box-shadow:0 2px 8px rgba(0,230,118,0.4);" onclick="event.stopPropagation(); restorePhoto('${photoId}', event)" title="Restore to Gallery">🔄</button>
+              <button class="btn-icon" style="width:34px; height:34px; font-size:14px; background:rgba(255,23,68,0.35); border:1px solid rgba(255,23,68,0.8); color:#ff1744; box-shadow:0 2px 8px rgba(255,23,68,0.4);" onclick="event.stopPropagation(); permanentlyDeletePhoto('${photoId}', event)" title="Permanently Delete">💥</button>
             </div>
           ` : `
             <button class="fav-btn ${photo.favorite ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${photoId}', this)" title="Favorite">
@@ -2260,6 +2261,9 @@ function openViewer(indexOrId) {
 
   if (trashBtn) {
     trashBtn.style.display = (!isTrashPhoto && canManage) ? 'block' : 'none';
+  }
+  if (trashRow) {
+    trashRow.style.display = (isTrashPhoto && canManage) ? 'flex' : 'none';
   }
   modal.classList.add('active');
 
