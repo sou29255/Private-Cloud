@@ -795,11 +795,11 @@
   <!-- Fullscreen 3D Photo & Video Viewer Modal -->
   <div id="viewer-modal" class="modal-overlay">
     <div class="viewer-main">
-      <button class="btn-icon" style="position:absolute; top:20px; left:20px;" onclick="prevPhoto()">◀</button>
+      <button class="btn-icon viewer-nav-btn prev-btn" id="viewer-prev-btn" onclick="prevPhoto()" title="Previous Photo / Video">◀</button>
       <img id="viewer-img" class="viewer-img" src="" alt="Viewer Media">
       <video id="viewer-video" class="viewer-video" controls playsinline preload="auto" style="display:none; max-width:90%; max-height:85vh; border-radius:14px; box-shadow:0 15px 50px rgba(0,0,0,0.85); outline:none;"></video>
-      <button class="btn-icon" style="position:absolute; top:20px; right:380px;" onclick="nextPhoto()">▶</button>
-      <button class="btn-icon" style="position:absolute; top:20px; right:430px;" onclick="closeViewer()">✖</button>
+      <button class="btn-icon viewer-nav-btn next-btn" id="viewer-next-btn" onclick="nextPhoto()" title="Next Photo / Video">▶</button>
+      <button class="btn-icon viewer-close-btn" id="viewer-close-btn" onclick="closeViewer()" title="Close Viewer">✖</button>
     </div>
 
     <!-- EXIF & Engagement Sidebar Drawer -->

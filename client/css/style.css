@@ -1168,6 +1168,97 @@ html, body {
   flex-direction: column;
 }
 
+/* Viewer Navigation (Left / Right Edges) & Close (Top Right) Buttons */
+.viewer-nav-btn {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 80 !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  background: rgba(10, 14, 26, 0.75) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  font-size: 18px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease !important;
+}
+
+.viewer-nav-btn.prev-btn {
+  left: 20px !important;
+  right: auto !important;
+}
+
+.viewer-nav-btn.next-btn {
+  right: 20px !important;
+  left: auto !important;
+}
+
+.viewer-nav-btn:hover {
+  transform: translateY(-50%) scale(1.1) !important;
+  background: rgba(124, 77, 255, 0.85) !important;
+  border-color: #00e5ff !important;
+}
+
+.viewer-close-btn {
+  position: absolute !important;
+  top: 20px !important;
+  right: 20px !important;
+  left: auto !important;
+  z-index: 90 !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background: rgba(10, 14, 26, 0.85) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: transform 0.2s ease, background 0.2s ease !important;
+}
+
+.viewer-close-btn:hover {
+  background: rgba(255, 23, 68, 0.85) !important;
+  transform: scale(1.1) !important;
+}
+
+@media (max-width: 768px) {
+  .viewer-nav-btn {
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 15px !important;
+  }
+  .viewer-nav-btn.prev-btn {
+    left: 10px !important;
+    right: auto !important;
+  }
+  .viewer-nav-btn.next-btn {
+    right: 10px !important;
+    left: auto !important;
+  }
+  .viewer-close-btn {
+    top: 12px !important;
+    right: 12px !important;
+    left: auto !important;
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 14px !important;
+  }
+}
+
 @media (max-width: 768px) {
   #viewer-modal.active {
     flex-direction: column !important;
