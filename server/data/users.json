@@ -1,0 +1,45 @@
+[
+  {
+    "id": "user_soumya_01",
+    "username": "Soumya",
+    "displayName": "Soumya (Head Admin)",
+    "avatar": "👑",
+    "passwordHash": "$2a$10$K4a/Nl8pJLqgRk7U.WT9v.TOcqGvhpMpssQ5TQ8ASNI68VL7zBaVK",
+    "role": "HEAD_ADMIN",
+    "phoneNumber": "9239425276",
+    "birthday": "2007-02-03",
+    "createdAt": "2026-08-21T01:43:03.072Z",
+    "lastLogin": "2026-08-21T01:43:03.072Z",
+    "followers": [
+      "Sumana"
+    ],
+    "following": [
+      "Sumana"
+    ],
+    "bio": "Creator & Archiver of beautiful memories! 👑✨",
+    "customAvatarUrl": "/api/users/avatar/avatar_soumya_1787279613168.webp",
+    "privacy": "PUBLIC",
+    "updatedAt": "2026-08-21T08:26:23.562Z"
+  },
+  {
+    "id": "user_sumana_02",
+    "username": "Sumana",
+    "displayName": "Sumana",
+    "avatar": "👩‍🦰",
+    "passwordHash": "$2a$10$9JnlkZ1e7cvncSy/MBDSpeW50IzulJK2HJIG.ZBjwQUo1Y.3LYWGS",
+    "role": "PROTECTED_ADMIN",
+    "phoneNumber": "9239425276",
+    "birthday": "2007-02-22",
+    "createdAt": "2026-08-21T01:43:03.138Z",
+    "lastLogin": "2026-08-21T01:43:03.138Z",
+    "followers": [
+      "Soumya"
+    ],
+    "following": [
+      "Soumya"
+    ],
+    "bio": "Living life, capturing every single memory. ✨",
+    "customAvatarUrl": "/api/users/avatar/avatar_sumana_1787327721471.webp",
+    "privacy": "PUBLIC"
+  }
+]

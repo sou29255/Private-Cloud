@@ -1,0 +1,25 @@
+{
+  "name": "Private Photo Cloud",
+  "short_name": "PhotoCloud",
+  "description": "Private Photo Cloud - Secure 4K Cloud Memories Vault",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#090a0f",
+  "theme_color": "#7c4dff",
+  "icons": [
+    {
+      "src": "/assets/memora-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,205 @@
+[
+  {
+    "_id": "photo_1787334035297_0zieh",
+    "id": "photo_1787334035297_0zieh",
+    "filename": "1787334035205_WhatsApp_Video_2026-08-21_at_11_05_04_PM.mp4",
+    "originalName": "WhatsApp Video 2026-08-21 at 11.05.04 PM.mp4",
+    "mimeType": "video/mp4",
+    "size": 9308551,
+    "width": 1920,
+    "height": 1080,
+    "hash": "c4434584df02e68caf8dc93bcd4ce9b2e73b4324494b9d228211df35760be290",
+    "storageProvider": "local",
+    "storagePaths": {
+      "original": "originals/1787334035205_WhatsApp_Video_2026-08-21_at_11_05_04_PM.mp4",
+      "medium": "originals/1787334035205_WhatsApp_Video_2026-08-21_at_11_05_04_PM.mp4",
+      "thumbnail": "originals/1787334035205_WhatsApp_Video_2026-08-21_at_11_05_04_PM.mp4"
+    },
+    "isVideo": true,
+    "exif": {
+      "camera": "Video Recording",
+      "lens": "Standard Lens",
+      "iso": 100,
+      "aperture": "f/2.8",
+      "shutterSpeed": "1/125s",
+      "locationName": "Server Vault",
+      "dateTaken": "2026-08-21T17:40:35.297Z"
+    },
+    "tags": [],
+    "favorite": true,
+    "likes": 1,
+    "likedBy": [
+      "Soumya"
+    ],
+    "comments": [
+      {
+        "id": "comm_1787334254586_8fvi",
+        "authorName": "Soumya",
+        "username": "Soumya",
+        "avatar": "👑",
+        "text": "🔥 🔥",
+        "createdAt": "2026-08-21T17:44:14.586Z"
+      }
+    ],
+    "trash": false,
+    "albumId": null,
+    "folderId": null,
+    "uploadedBy": {
+      "username": "Soumya",
+      "displayName": "Soumya (Head Admin)",
+      "avatar": "👑",
+      "userId": "user_soumya_01"
+    },
+    "userId": "user_soumya_01",
+    "createdAt": "2026-08-21T17:40:35.297Z",
+    "updatedAt": "2026-08-21T17:40:35.297Z"
+  },
+  {
+    "_id": "photo_1787334034898_if6k2",
+    "id": "photo_1787334034898_if6k2",
+    "filename": "1787334034877_WhatsApp_Video_2026-08-21_at_11_09_33_PM.mp4",
+    "originalName": "WhatsApp Video 2026-08-21 at 11.09.33 PM.mp4",
+    "mimeType": "video/mp4",
+    "size": 10802337,
+    "width": 1920,
+    "height": 1080,
+    "hash": "1c4c51cf3fffc6f217714fc7b6e0bc934ab0aba9113f2240ac44e7cddd4caf9a",
+    "storageProvider": "local",
+    "storagePaths": {
+      "original": "originals/1787334034877_WhatsApp_Video_2026-08-21_at_11_09_33_PM.mp4",
+      "medium": "originals/1787334034877_WhatsApp_Video_2026-08-21_at_11_09_33_PM.mp4",
+      "thumbnail": "originals/1787334034877_WhatsApp_Video_2026-08-21_at_11_09_33_PM.mp4"
+    },
+    "isVideo": true,
+    "exif": {
+      "camera": "Video Recording",
+      "lens": "Standard Lens",
+      "iso": 100,
+      "aperture": "f/2.8",
+      "shutterSpeed": "1/125s",
+      "locationName": "Server Vault",
+      "dateTaken": "2026-08-21T17:40:34.898Z"
+    },
+    "tags": [],
+    "favorite": true,
+    "likes": 1,
+    "likedBy": [
+      "Soumya"
+    ],
+    "comments": [
+      {
+        "id": "comm_1787334226642_djvo",
+        "authorName": "Soumya",
+        "username": "Soumya",
+        "avatar": "👑",
+        "text": "Frist website always memorable❤️",
+        "createdAt": "2026-08-21T17:43:46.642Z"
+      }
+    ],
+    "trash": false,
+    "albumId": null,
+    "folderId": null,
+    "uploadedBy": {
+      "username": "Soumya",
+      "displayName": "Soumya (Head Admin)",
+      "avatar": "👑",
+      "userId": "user_soumya_01"
+    },
+    "userId": "user_soumya_01",
+    "createdAt": "2026-08-21T17:40:34.898Z",
+    "updatedAt": "2026-08-21T17:40:34.898Z"
+  },
+  {
+    "_id": "photo_1787285924933_a64ak",
+    "id": "photo_1787285924933_a64ak",
+    "filename": "1787285924814_WhatsApp_Image_2025-10-14_at_4_17_57_PM.jpeg",
+    "originalName": "WhatsApp Image 2025-10-14 at 4.17.57 PM.jpeg",
+    "mimeType": "image/jpeg",
+    "size": 135847,
+    "width": 960,
+    "height": 1280,
+    "hash": "10ff4ad29d62be68c206dc60879435d166500e59499e5374588151fb0e1f9613",
+    "storageProvider": "local",
+    "storagePaths": {
+      "original": "originals/1787285924814_WhatsApp_Image_2025-10-14_at_4_17_57_PM.jpeg",
+      "medium": "medium/1787285924814_WhatsApp_Image_2025-10-14_at_4_17_57_PM.webp",
+      "thumbnail": "thumbnails/1787285924814_WhatsApp_Image_2025-10-14_at_4_17_57_PM.webp"
+    },
+    "isVideo": false,
+    "exif": {
+      "camera": "Digital Camera",
+      "lens": "Standard Lens",
+      "iso": 100,
+      "aperture": "f/2.8",
+      "shutterSpeed": "1/125s",
+      "locationName": "Server Vault",
+      "dateTaken": "2026-08-21T04:18:44.821Z"
+    },
+    "tags": [],
+    "favorite": false,
+    "likes": 1,
+    "likedBy": [
+      "Soumya"
+    ],
+    "comments": [],
+    "trash": false,
+    "albumId": null,
+    "folderId": null,
+    "uploadedBy": {
+      "username": "Soumya",
+      "displayName": "Soumya (Head Admin)",
+      "avatar": "👑",
+      "userId": "user_soumya_01"
+    },
+    "userId": "user_soumya_01",
+    "createdAt": "2026-08-21T04:18:44.933Z",
+    "updatedAt": "2026-08-21T04:18:44.933Z",
+    "trashedAt": "2026-08-21T06:04:02.226Z"
+  },
+  {
+    "_id": "photo_1787278007638_7luwo",
+    "id": "photo_1787278007638_7luwo",
+    "filename": "1787278007552_WhatsApp_Image_2026-08-15_at_8_22_06_PM.jpeg",
+    "originalName": "WhatsApp Image 2026-08-15 at 8.22.06 PM.jpeg",
+    "mimeType": "image/jpeg",
+    "size": 106488,
+    "width": 622,
+    "height": 773,
+    "hash": "c68addb00c83b0a6857bc8f91d8ca57e0cda0f9971e4a960320fc30f5d5580cc",
+    "storageProvider": "local",
+    "storagePaths": {
+      "original": "originals/1787278007552_WhatsApp_Image_2026-08-15_at_8_22_06_PM.jpeg",
+      "medium": "medium/1787278007552_WhatsApp_Image_2026-08-15_at_8_22_06_PM.webp",
+      "thumbnail": "thumbnails/1787278007552_WhatsApp_Image_2026-08-15_at_8_22_06_PM.webp"
+    },
+    "isVideo": false,
+    "exif": {
+      "camera": "Digital Camera",
+      "lens": "Standard Lens",
+      "iso": 100,
+      "aperture": "f/2.8",
+      "shutterSpeed": "1/125s",
+      "locationName": "Server Vault",
+      "dateTaken": "2026-08-21T02:06:47.559Z"
+    },
+    "tags": [],
+    "favorite": false,
+    "likes": 1,
+    "likedBy": [
+      "Soumya"
+    ],
+    "comments": [],
+    "trash": false,
+    "albumId": null,
+    "folderId": null,
+    "uploadedBy": {
+      "username": "Soumya",
+      "displayName": "Soumya",
+      "avatar": "👑",
+      "userId": "user_soumya_01"
+    },
+    "userId": "user_soumya_01",
+    "createdAt": "2026-08-21T02:06:47.638Z",
+    "updatedAt": "2026-08-21T02:06:47.638Z"
+  }
+]

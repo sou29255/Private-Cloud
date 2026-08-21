@@ -1,0 +1,229 @@
+[
+  {
+    "_id": "photo_1787317291410_qcs0b",
+    "id": "photo_1787317291410_qcs0b",
+    "filename": "1787317291371_v.mp4",
+    "originalName": "v.mp4",
+    "mimeType": "video/mp4",
+    "size": 9987586,
+    "width": 1920,
+    "height": 1080,
+    "hash": "6e92c47e3390032bd068092e65063dbc3e7e19d5fcbf455046faf330e36e93f7",
+    "storageProvider": "local",
+    "storagePaths": {
+      "original": "originals/1787317291371_v.mp4",
+      "medium": "originals/1787317291371_v.mp4",
+      "thumbnail": "originals/1787317291371_v.mp4"
+    },
+    "isVideo": true,
+    "exif": {
+      "camera": "Video Recording",
+      "lens": "Standard Lens",
+      "iso": 100,
+      "aperture": "f/2.8",
+      "shutterSpeed": "1/125s",
+      "locationName": "Server Vault",
+      "dateTaken": "2026-08-21T13:01:31.410Z"
+    },
+    "tags": [],
+    "favorite": false,
+    "likes": 0,
+    "likedBy": [],
+    "comments": [],
+    "trash": true,
+    "albumId": null,
+    "folderId": null,
+    "uploadedBy": {
+      "username": "Sumana",
+      "displayName": "Sumana",
+      "avatar": "👩‍🦰",
+      "userId": "user_sumana_02"
+    },
+    "userId": "user_sumana_02",
+    "createdAt": "2026-08-21T13:01:31.410Z",
+    "updatedAt": "2026-08-21T13:01:31.410Z",
+    "trashedAt": "2026-08-21T13:01:54.735Z"
+  },
+  {
+    "_id": "photo_1787311530638_42wuk",
+    "id": "photo_1787311530638_42wuk",
+    "filename": "1787311530481_me.jpeg",
+    "originalName": "me.jpeg",
+    "mimeType": "image/jpeg",
+    "size": 181575,
+    "width": 902,
+    "height": 1600,
+    "hash": "2739d568ec010100d1ef4d605e7ebb2c58085bab777d43605c16dc4210b46d9b",
+    "storageProvider": "local",
+    "storagePaths": {
+      "original": "originals/1787311530481_me.jpeg",
+      "medium": "medium/1787311530481_me.webp",
+      "thumbnail": "thumbnails/1787311530481_me.webp"
+    },
+    "isVideo": false,
+    "exif": {
+      "camera": "Digital Camera",
+      "lens": "Standard Lens",
+      "iso": 100,
+      "aperture": "f/2.8",
+      "shutterSpeed": "1/125s",
+      "locationName": "Server Vault",
+      "dateTaken": "2026-08-21T11:25:30.490Z"
+    },
+    "tags": [
+      "my"
+    ],
+    "favorite": false,
+    "likes": 0,
+    "likedBy": [],
+    "comments": [],
+    "trash": false,
+    "albumId": "alb_1787311530432_o497",
+    "uploadedBy": {
+      "username": "Soumya",
+      "displayName": "Soumya (Head Admin)",
+      "avatar": "/api/users/avatar/avatar_soumya_1787279613168.webp",
+      "userId": "user_soumya_01"
+    },
+    "userId": "user_soumya_01",
+    "createdAt": "2026-08-21T11:25:30.638Z",
+    "updatedAt": "2026-08-21T11:25:30.638Z"
+  },
+  {
+    "_id": "photo_1787311048255_na3oi",
+    "id": "photo_1787311048255_na3oi",
+    "filename": "1787311048137_me_bon.jpeg",
+    "originalName": "me,bon.jpeg",
+    "mimeType": "image/jpeg",
+    "size": 178482,
+    "width": 652,
+    "height": 1156,
+    "hash": "417571498b7abf82cd698f46076717ef1fadf2c54dc6a05fac0c0e2a0f75994c",
+    "storageProvider": "local",
+    "storagePaths": {
+      "original": "originals/1787311048137_me_bon.jpeg",
+      "medium": "medium/1787311048137_me_bon.webp",
+      "thumbnail": "thumbnails/1787311048137_me_bon.webp"
+    },
+    "isVideo": false,
+    "exif": {
+      "camera": "Digital Camera",
+      "lens": "Standard Lens",
+      "iso": 100,
+      "aperture": "f/2.8",
+      "shutterSpeed": "1/125s",
+      "locationName": "Server Vault",
+      "dateTaken": "2026-08-21T11:17:28.142Z"
+    },
+    "tags": [
+      "my"
+    ],
+    "favorite": false,
+    "likes": 0,
+    "likedBy": [],
+    "comments": [],
+    "trash": true,
+    "albumId": "alb_1787311048110_bnvp",
+    "uploadedBy": {
+      "username": "Soumya",
+      "displayName": "Soumya (Head Admin)",
+      "avatar": "/api/users/avatar/avatar_soumya_1787279613168.webp",
+      "userId": "user_soumya_01"
+    },
+    "userId": "user_soumya_01",
+    "createdAt": "2026-08-21T11:17:28.255Z",
+    "updatedAt": "2026-08-21T11:17:28.255Z",
+    "trashedAt": "2026-08-21T11:26:40.850Z"
+  },
+  {
+    "_id": "photo_1787285924933_a64ak",
+    "id": "photo_1787285924933_a64ak",
+    "filename": "1787285924814_WhatsApp_Image_2025-10-14_at_4_17_57_PM.jpeg",
+    "originalName": "WhatsApp Image 2025-10-14 at 4.17.57 PM.jpeg",
+    "mimeType": "image/jpeg",
+    "size": 135847,
+    "width": 960,
+    "height": 1280,
+    "hash": "10ff4ad29d62be68c206dc60879435d166500e59499e5374588151fb0e1f9613",
+    "storageProvider": "local",
+    "storagePaths": {
+      "original": "originals/1787285924814_WhatsApp_Image_2025-10-14_at_4_17_57_PM.jpeg",
+      "medium": "medium/1787285924814_WhatsApp_Image_2025-10-14_at_4_17_57_PM.webp",
+      "thumbnail": "thumbnails/1787285924814_WhatsApp_Image_2025-10-14_at_4_17_57_PM.webp"
+    },
+    "isVideo": false,
+    "exif": {
+      "camera": "Digital Camera",
+      "lens": "Standard Lens",
+      "iso": 100,
+      "aperture": "f/2.8",
+      "shutterSpeed": "1/125s",
+      "locationName": "Server Vault",
+      "dateTaken": "2026-08-21T04:18:44.821Z"
+    },
+    "tags": [],
+    "favorite": false,
+    "likes": 1,
+    "likedBy": [
+      "Soumya"
+    ],
+    "comments": [],
+    "trash": false,
+    "albumId": null,
+    "folderId": null,
+    "uploadedBy": {
+      "username": "Soumya",
+      "displayName": "Soumya (Head Admin)",
+      "avatar": "👑",
+      "userId": "user_soumya_01"
+    },
+    "userId": "user_soumya_01",
+    "createdAt": "2026-08-21T04:18:44.933Z",
+    "updatedAt": "2026-08-21T04:18:44.933Z",
+    "trashedAt": "2026-08-21T06:04:02.226Z"
+  },
+  {
+    "_id": "photo_1787278007638_7luwo",
+    "id": "photo_1787278007638_7luwo",
+    "filename": "1787278007552_WhatsApp_Image_2026-08-15_at_8_22_06_PM.jpeg",
+    "originalName": "WhatsApp Image 2026-08-15 at 8.22.06 PM.jpeg",
+    "mimeType": "image/jpeg",
+    "size": 106488,
+    "width": 622,
+    "height": 773,
+    "hash": "c68addb00c83b0a6857bc8f91d8ca57e0cda0f9971e4a960320fc30f5d5580cc",
+    "storageProvider": "local",
+    "storagePaths": {
+      "original": "originals/1787278007552_WhatsApp_Image_2026-08-15_at_8_22_06_PM.jpeg",
+      "medium": "medium/1787278007552_WhatsApp_Image_2026-08-15_at_8_22_06_PM.webp",
+      "thumbnail": "thumbnails/1787278007552_WhatsApp_Image_2026-08-15_at_8_22_06_PM.webp"
+    },
+    "isVideo": false,
+    "exif": {
+      "camera": "Digital Camera",
+      "lens": "Standard Lens",
+      "iso": 100,
+      "aperture": "f/2.8",
+      "shutterSpeed": "1/125s",
+      "locationName": "Server Vault",
+      "dateTaken": "2026-08-21T02:06:47.559Z"
+    },
+    "tags": [],
+    "favorite": false,
+    "likes": 0,
+    "likedBy": [],
+    "comments": [],
+    "trash": false,
+    "albumId": null,
+    "folderId": null,
+    "uploadedBy": {
+      "username": "Soumya",
+      "displayName": "Soumya",
+      "avatar": "👑",
+      "userId": "user_soumya_01"
+    },
+    "userId": "user_soumya_01",
+    "createdAt": "2026-08-21T02:06:47.638Z",
+    "updatedAt": "2026-08-21T02:06:47.638Z"
+  }
+]

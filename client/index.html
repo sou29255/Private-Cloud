@@ -1,0 +1,2146 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Private Photo Cloud — Cinematic 3D Photo Storage</title>
+  <meta name="description" content="Large-scale, premium, modern, immersive 3D private photo cloud storage web application.">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/animations.css">
+  <link rel="stylesheet" href="./css/favoriteMemoryEffects.css">
+  <link rel="stylesheet" href="./css/videoAnimations.css">
+  <link rel="stylesheet" href="./css/mobileResponsive.css">
+  <!-- Fonts & CDN Libraries -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       SECTION 1: CINEMATIC 3D TWO-STAGE LOGIN SCREEN
+       ========================================================================== -->
+  <div id="login-view">
+    <canvas id="login-three-canvas"></canvas>
+
+    <!-- Stage 1: Vault Master Password Gatekeeper -->
+    <div id="vault-step1-card" class="login-card glass-panel">
+      <div class="login-logo-3d">🔒</div>
+      <h1>MY PRIVATE CLOUD</h1>
+      <p class="subtitle">Step 1: Server Gatekeeper — Enter Master Vault Password</p>
+
+      <form id="vault-step1-form">
+        <div class="input-group">
+          <label for="vault-master-password">Master Server Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="vault-master-password" placeholder="Enter master password" required autofocus>
+            <button type="button" class="toggle-password-btn" onclick="const p = document.getElementById('vault-master-password'); p.type = p.type === 'password' ? 'text' : 'password';">👁️</button>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 20px; font-size: 13px; color: var(--text-secondary);">
+          <span>🔒 Protected Cloud Vault</span>
+          <span style="color:var(--text-muted); font-size:12px;">Encrypted Session</span>
+        </div>
+
+        <button type="submit" class="btn-primary-3d">UNLOCK VAULT GATEWAY 🚀</button>
+        <div style="margin-top:14px; text-align:center; font-size:12.5px;">
+          <span style="color:var(--accent-cyan); cursor:pointer; font-weight:600;" onclick="skipToStep2Signup()">+ New Member? Sign Up Directly ✨</span>
+        </div>
+      </form>
+    </div>
+
+    <!-- Stage 2: Personal Profile Selection / Login / Registration -->
+    <div id="vault-step2-card" class="login-card glass-panel" style="display: none; max-width: 500px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <button type="button" class="btn-icon" style="width:34px; height:34px; font-size:14px;" onclick="backToStep1()" title="Back to Step 1">◀</button>
+        <span style="font-size:11px; font-weight:700; color:var(--status-online); background:rgba(0,230,118,0.15); padding:4px 10px; border-radius:20px;">GATEWAY UNLOCKED 🔓</span>
+      </div>
+
+      <h2 style="font-size:24px; font-weight:900; background:var(--accent-gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">ACCESS VAULT</h2>
+      <p class="subtitle" style="margin-bottom:16px;">Sign in to your account or register a new profile</p>
+
+      <!-- Auth Mode Switcher (Login / Sign Up) -->
+      <div style="display:flex; gap:10px; margin-bottom:18px;">
+        <button type="button" id="tab-btn-login" class="btn-auth-tab active" onclick="toggleRegisterMode(false)">🔑 Login</button>
+        <button type="button" id="tab-btn-signup" class="btn-auth-tab" onclick="toggleRegisterMode(true)">✨ Sign Up</button>
+      </div>
+
+      <!-- Quick Profiles List (Soumya and Sumana ONLY) -->
+      <div id="quick-profiles-container" style="margin-bottom:18px;">
+        <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; text-align:left;">Select Account:</div>
+        <div id="quick-profiles-grid" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px;">
+          <!-- Dynamically populated with ONLY Soumya and Sumana -->
+        </div>
+      </div>
+
+      <!-- Profile Login Form -->
+      <form id="profile-login-form">
+        <div class="input-group">
+          <label for="profile-login-username"><span>👤</span> <span>Username</span></label>
+          <div class="input-wrapper">
+            <input type="text" id="profile-login-username" class="auth-glass-input" placeholder="Enter username (Soumya / Sumana)" required autocomplete="username">
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="profile-login-password"><span>🔒</span> <span>Password</span></label>
+          <div class="input-wrapper">
+            <input type="password" id="profile-login-password" class="auth-glass-input" placeholder="Enter password" required autocomplete="current-password">
+            <button type="button" class="toggle-password-btn" onclick="const p = document.getElementById('profile-login-password'); p.type = p.type === 'password' ? 'text' : 'password';">👁️</button>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; font-size:12px;">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" id="profile-remember" checked> Keep Logged In
+          </label>
+          <span style="color:var(--accent-cyan); cursor:pointer; font-weight:600;" onclick="toggleRegisterMode(true)">+ Need an account? Sign Up</span>
+        </div>
+
+        <button type="submit" class="btn-primary-3d">LOGIN TO VAULT 🔑</button>
+      </form>
+
+      <!-- Profile Register Form (Sign Up) -->
+      <form id="profile-register-form" style="display: none;">
+        <div class="input-group">
+          <label for="reg-username"><span>👤</span> <span>Choose Username</span></label>
+          <div class="input-wrapper">
+            <input type="text" id="reg-username" class="auth-glass-input" placeholder="Choose a username" required autocomplete="username">
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="reg-displayname"><span>🏷️</span> <span>Display Name</span></label>
+          <div class="input-wrapper">
+            <input type="text" id="reg-displayname" class="auth-glass-input" placeholder="Your display name" required>
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="reg-password"><span>🔒</span> <span>Password</span></label>
+          <div class="input-wrapper">
+            <input type="password" id="reg-password" class="auth-glass-input" placeholder="Create password (min 3 characters)" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <!-- Birthday / Date of Birth -->
+        <div class="input-group">
+          <label for="reg-birthday"><span>🎂</span> <span>Date of Birth (Birthday)</span></label>
+          <div class="input-wrapper">
+            <input type="date" id="reg-birthday" class="auth-glass-input" required>
+          </div>
+        </div>
+
+        <!-- Phone Number (Strict 10 Digits) -->
+        <div class="input-group">
+          <label for="reg-phone"><span>📱</span> <span>Mobile Number (10 Digits)</span></label>
+          <div class="input-wrapper">
+            <input type="tel" id="reg-phone" class="auth-glass-input" placeholder="10-digit Mobile Number (e.g. 9876543210)" maxlength="10" required autocomplete="tel">
+          </div>
+          <div style="font-size:10px; color:var(--text-muted); margin-top:4px; text-align:left;">
+            🔒 Strictly Private: Only Soumya (Head Admin) and you can view your number.
+          </div>
+        </div>
+
+        <!-- Avatar Picker -->
+        <div style="margin-bottom:18px; text-align:left;">
+          <label style="font-size:12px; font-weight:600; color:var(--text-secondary); margin-bottom:8px; display:block;">Select Avatar Icon:</label>
+          <div id="avatar-picker-grid" style="display:flex; gap:8px; flex-wrap:wrap;">
+            <span class="avatar-chip active" data-avatar="👨‍💻" onclick="selectAvatar('👨‍💻', this)">👨‍💻</span>
+            <span class="avatar-chip" data-avatar="👩‍🦰" onclick="selectAvatar('👩‍🦰', this)">👩‍🦰</span>
+            <span class="avatar-chip" data-avatar="🌸" onclick="selectAvatar('🌸', this)">🌸</span>
+            <span class="avatar-chip" data-avatar="⚡" onclick="selectAvatar('⚡', this)">⚡</span>
+            <span class="avatar-chip" data-avatar="🚀" onclick="selectAvatar('🚀', this)">🚀</span>
+            <span class="avatar-chip" data-avatar="👑" onclick="selectAvatar('👑', this)">👑</span>
+            <span class="avatar-chip" data-avatar="📸" onclick="selectAvatar('📸', this)">📸</span>
+            <span class="avatar-chip" data-avatar="💖" onclick="selectAvatar('💖', this)">💖</span>
+            <span class="avatar-chip" data-avatar="🎸" onclick="selectAvatar('🎸', this)">🎸</span>
+            <span class="avatar-chip" data-avatar="🌊" onclick="selectAvatar('🌊', this)">🌊</span>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; font-size:12px;">
+          <span style="color:var(--accent-blue); cursor:pointer; font-weight:600;" onclick="toggleRegisterMode(false)">◀ Already have an account? Login</span>
+        </div>
+
+        <button type="submit" id="reg-submit-btn" class="btn-primary-3d" style="background:linear-gradient(135deg, #00f5d4, #7c4dff);">CREATE ACCOUNT & ENTER 🚀</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       SECTION 2: MAIN DASHBOARD & GALLERY INTERFACE
+       ========================================================================== -->
+  <div id="app-view" style="display: none;">
+
+    <!-- Left Sidebar (Desktop / Tablet Drawer) -->
+    <aside class="sidebar" id="main-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-icon">🔒</div>
+        <h2>PRIVATE CLOUD</h2>
+      </div>
+
+      <ul class="nav-list">
+        <li class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+          <span class="icon">⚡</span> <span>Dashboard</span>
+        </li>
+        <li class="nav-item" data-view="all" onclick="switchView('all', 'Photo Library')">
+          <span class="icon">🖼️</span> <span>Photos</span>
+        </li>
+        <li class="nav-item" data-view="albums" onclick="switchView('albums', 'Photo Albums')">
+          <span class="icon">📁</span> <span>Albums</span>
+        </li>
+        <li class="nav-item" data-view="favorites" onclick="switchView('favorites', 'Favorite Memories')">
+          <span class="icon">❤️</span> <span>Favorites</span>
+        </li>
+        <li class="nav-item" data-view="recent" onclick="switchView('recent', 'Recently Added')">
+          <span class="icon">🕒</span> <span>Recent</span>
+        </li>
+        <li class="nav-item" data-view="videos" onclick="switchView('videos', 'Video Vault')">
+          <span class="icon">🎬</span> <span>Videos</span>
+        </li>
+        <li class="nav-item" data-view="music" onclick="switchView('music', 'Music Vault 🎵')">
+          <span class="icon">🎵</span> <span>Music</span>
+        </li>
+        <!-- Special VIP Exclusive: Only For You (Photoshop & Music Vault for Sumana) -->
+        <li class="nav-item special-vip-nav" id="nav-only-for-you" data-view="only-for-you" onclick="switchView('only-for-you', 'Only For You 💖')" style="display:none;">
+          <span class="icon" style="filter:drop-shadow(0 0 6px #ff4081);">✨</span>
+          <span style="font-weight:800; background:linear-gradient(135deg, #ff4081, #00e5ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Only For You 💖</span>
+          <span class="vip-glow-pill">VIP</span>
+        </li>
+        <li class="nav-item" data-view="profile-hub" onclick="openProfileHub(currentUser?.username)">
+          <span class="icon" id="sidebar-user-avatar">👤</span> <span id="sidebar-user-name" style="font-weight:700;">My Profile Hub</span>
+        </li>
+        <!-- PWA Web App Install Button in Sidebar -->
+        <li class="nav-item pwa-sidebar-install" id="sidebar-pwa-install-btn" onclick="triggerPwaInstall()" title="Install Private Cloud as App on Device">
+          <span class="icon" style="color:var(--accent-cyan);">📲</span>
+          <span style="font-weight:700; color:var(--accent-cyan);">Install App</span>
+          <span class="vip-glow-pill" style="background:linear-gradient(135deg, #00f5d4, #00b4d8); color:#000; font-size:10px; font-weight:800; padding:2px 8px; border-radius:10px; margin-left:auto;">APP</span>
+        </li>
+        <li class="nav-item" data-view="trash" onclick="switchView('trash', 'Recycle Bin / Trash')">
+          <span class="icon">🗑️</span> <span>Trash</span>
+        </li>
+        <!-- Admin Help Desk / Support Ticket Form -->
+        <li class="nav-item" data-view="support" onclick="openSupportModal()" title="Contact Head Admin & Report Issues">
+          <span class="icon">🎧</span> <span>Admin Help Desk</span>
+        </li>
+        <!-- Head Admin User Management (Visible Only to Soumya) -->
+        <li class="nav-item head-admin-nav" id="nav-head-admin" style="display:none; color:#ffd700; border:1px solid rgba(255,215,0,0.25); border-radius:var(--radius-sm); margin-top:8px;" onclick="openUserManagerModal()">
+          <span class="icon">👑</span> <span style="font-weight:700;">Manage Users</span>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="storage-widget">
+          <div style="font-size:12px; font-weight:600; color:var(--text-secondary); display:flex; justify-content:space-between;">
+            <span>Storage Usage</span>
+            <span style="color:var(--accent-blue)">Local NAS</span>
+          </div>
+          <div class="storage-bar-bg">
+            <div class="storage-bar-fill" id="storage-fill"></div>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted);" id="storage-text">2.4 GB Used of 10.4 TB</div>
+        </div>
+
+        <button class="nav-item" style="margin-top:12px; color:var(--status-danger); width:100%; border:none; background:none;" onclick="handleLogout()">
+          <span class="icon">🚪</span> <span>Logout Profile</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Mobile Sidebar Drawer Backdrop Overlay -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
+
+    <!-- Main Wrapper -->
+    <main class="main-wrapper">
+
+      <!-- Topbar Navigation -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="btn-icon" id="sidebar-toggle-btn" style="display:none;" onclick="toggleSidebar()" title="Toggle Menu">☰</button>
+          <div class="search-box" id="global-search-box-wrap">
+            <span id="search-box-icon">🔍</span>
+            <input type="text" id="global-search-input" placeholder="Search profiles, photos, or music..." autocomplete="off">
+            <button type="button" id="search-clear-btn" style="display:none; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:12px; padding:0 4px;" onclick="clearGlobalSearch()" title="Clear Search">✖</button>
+            
+            <!-- Live Context-Aware Search Results Dropdown -->
+            <div id="search-dropdown-results" class="search-dropdown-panel glass-panel" style="display:none;"></div>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <!-- Active User Profile Badge (Click opens Personal Profile Hub) -->
+          <div id="topbar-user-badge" class="user-profile-badge" onclick="openProfileHub(currentUser?.username)" title="Click to view your personal Profile Hub">
+            <span id="topbar-user-avatar">👑</span>
+            <span id="topbar-user-name" style="font-weight:700;">Soumya</span>
+          </div>
+
+          <!-- Pending Requests Badge Button -->
+          <button id="topbar-requests-btn" class="btn-primary-3d" style="display:none; background:linear-gradient(135deg, #ff007f, #7c4dff); color:#fff; font-weight:800; padding:7px 12px; font-size:12px; border-radius:20px; border:none; cursor:pointer; gap:6px; align-items:center;" onclick="openPendingRequestsModal()" title="Pending Requests">
+            <span>💌</span> <span id="topbar-requests-count">0</span> Requests
+          </button>
+
+          <!-- Direct Messenger Quick Button -->
+          <button id="topbar-messenger-btn" class="btn-primary-3d" style="background:linear-gradient(135deg, #00f5d4, #00b4d8); color:#000; font-weight:800; padding:7px 14px; font-size:12px; border-radius:20px; border:none; cursor:pointer; display:inline-flex; gap:6px; align-items:center; box-shadow:0 4px 15px rgba(0,245,212,0.35);" onclick="openProfileMessenger()" title="💬 Direct Messenger">
+            <span>💬</span> <span>Messages</span>
+          </button>
+
+          <!-- Pradhan Virtual Guide Quick Button -->
+          <button id="topbar-pradhan-btn" class="btn-primary-3d" style="background:linear-gradient(135deg, #ffd700, #ff007f); color:#000; font-weight:800; padding:7px 14px; font-size:12px; border-radius:20px; border:none; cursor:pointer; display:inline-flex; gap:6px; align-items:center; box-shadow:0 4px 15px rgba(255,215,0,0.35);" onclick="if(window.PradhanGuide) window.PradhanGuide.start();" title="🌟 Pradhan Virtual Guide">
+            <span>🌟</span> <span>Pradhan Guide</span>
+          </button>
+
+          <!-- Head Admin Quick Button (Soumya Only) -->
+          <button id="topbar-admin-btn" class="btn-primary-3d" style="display:none; background:linear-gradient(135deg, #ffd700, #ff9100); color:#000; font-weight:800; padding:7px 14px; font-size:12px; border-radius:20px; box-shadow:0 0 15px rgba(255,215,0,0.4); border:none; cursor:pointer; gap:6px; align-items:center;" onclick="openUserManagerModal()" title="👑 Head Admin Panel">
+            <span>👑</span> <span>Manage Users</span>
+          </button>
+
+          <button id="pwa-install-btn" class="btn-pwa-install" style="display:none;" onclick="triggerPwaInstall()">
+            <span>📲</span> <span>Install</span>
+          </button>
+          <button class="btn-upload" onclick="openModal('upload-modal')">
+            <span>➕</span> <span>Upload</span>
+          </button>
+          <button id="topbar-music-btn" class="btn-icon" onclick="switchView('music', 'Music Vault 🎵')" title="Music Player">🎵</button>
+          <button id="topbar-command-btn" class="btn-icon" onclick="toggleModal('command-palette-modal')" title="Command Palette (Ctrl + K)">⌨️</button>
+          <button id="theme-toggle-btn" class="btn-icon theme-toggle-btn" onclick="toggleTheme()" title="Switch Visual Mood (Cyber, Sunset, Emerald, Light, Dark)">🎨</button>
+        </div>
+      </header>
+
+      <!-- Content Body -->
+      <div class="content-body">
+
+        <!-- 3D Hero Section (Dashboard Only) -->
+        <section id="hero-section" class="hero-3d-section">
+          <div class="hero-content">
+            <div id="hero-greeting-pill" class="hero-greeting-pill">✨ Welcome to Private Photo Cloud</div>
+            <h1 id="hero-heading">YOUR MEMORIES</h1>
+            <p id="hero-photo-count">Memories Stored Securely</p>
+            <div class="hero-action-buttons">
+              <button type="button" class="btn-hero-action primary" onclick="openModal('upload-modal')">
+                <span>➕</span> <span>Upload Photo</span>
+              </button>
+              <button type="button" class="btn-hero-action secondary" onclick="switchView('music', 'Music Vault 🎵')">
+                <span>🎵</span> <span>Play Music</span>
+              </button>
+              <button type="button" class="btn-hero-action secondary" onclick="openProfileHub(currentUser?.username)">
+                <span>👤</span> <span>Profile Hub</span>
+              </button>
+            </div>
+          </div>
+          <div class="hero-cards-floating" id="hero-cards-container">
+            <!-- Dynamic 3D spotlight cards populated in app.js -->
+          </div>
+        </section>
+
+        <!-- Smart Home Dashboard Overview Widgets -->
+        <div id="widget-grid" class="dashboard-grid">
+          <div class="widget-card">
+            <div class="widget-icon">📷</div>
+            <div>
+              <div style="font-size:20px; font-weight:800" id="widget-photo-count">0</div>
+              <div style="font-size:12px; color:var(--text-muted)">Total Photos</div>
+            </div>
+          </div>
+          <div class="widget-card">
+            <div class="widget-icon">🎥</div>
+            <div>
+              <div style="font-size:20px; font-weight:800" id="widget-video-count">0</div>
+              <div style="font-size:12px; color:var(--text-muted)">Total Videos</div>
+            </div>
+          </div>
+          <div class="widget-card">
+            <div class="widget-icon">💾</div>
+            <div>
+              <div style="font-size:20px; font-weight:800" id="widget-storage-used">2.4 GB</div>
+              <div style="font-size:12px; color:var(--text-muted)">Storage Used (10.4 TB Cap)</div>
+            </div>
+          </div>
+          <div class="widget-card" style="cursor:pointer;" onclick="switchView('music', 'Music Vault 🎵')">
+            <div class="widget-icon">🎵</div>
+            <div>
+              <div style="font-size:14px; font-weight:700; color:var(--accent-cyan)" id="widget-music-count">14 Tracks Ready</div>
+              <div style="font-size:11px; color:var(--text-muted)">Music Vault Available</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Music Vault Section (Music View Only) -->
+        <section id="music-section-wrap" style="margin-bottom: 32px; display: none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+            <div>
+              <h2 id="music-section-title" style="font-size:var(--font-h2); font-weight:800; margin:0;">🎵 Music Vault (14 Tracks)</h2>
+              <p style="margin:4px 0 0; font-size:12px; color:var(--text-muted);">Listen, enjoy, and share songs with the entire community ✨</p>
+            </div>
+            <button type="button" class="btn-primary-3d" onclick="openAddMusicModal()" style="display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:12px; font-size:13px; cursor:pointer;">
+              <span>➕</span> <span>Add Song / Track</span>
+            </button>
+          </div>
+          <div id="music-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </section>
+
+        <!-- Dedicated User Profile Hub Section -->
+        <section id="profile-hub-section-wrap" style="display:none; margin-bottom:32px;">
+          <!-- Profile Header Card / Banner -->
+          <!-- Profile Header Card / Banner -->
+          <div class="profile-hero-card">
+            <!-- Cover Gradient Background -->
+            <div class="profile-cover-banner" id="ph-cover-banner"></div>
+            
+            <div class="profile-header-content">
+              <!-- Centered Overlapping Avatar Container -->
+              <div class="profile-avatar-container">
+                <div id="ph-avatar" class="profile-main-avatar">👤</div>
+                <button type="button" id="ph-avatar-upload-btn" class="avatar-change-badge" title="Change Profile Photo" onclick="document.getElementById('profile-avatar-file-input').click()">
+                  📷
+                </button>
+                <input type="file" id="profile-avatar-file-input" accept="image/*" style="display:none;" onchange="handleAvatarFileSelect(event)" />
+              </div>
+
+              <!-- Profile Identity Section (Centered) -->
+              <div class="profile-identity-block">
+                <div class="profile-name-row">
+                  <h1 id="ph-display-name" class="profile-display-name">Profile Name</h1>
+                  <span id="ph-role-badge" class="genre-tag romantic">MEMBER</span>
+                  <span id="ph-privacy-badge" class="genre-tag enjoyful">🌐 Public</span>
+                  <span id="ph-birthday-tag" class="genre-tag romantic" style="display:none; animation:pulseGlow 2s infinite;">🎂 Birthday Today! 🎉</span>
+                </div>
+                <div class="profile-handle-row">
+                  <span id="ph-username" class="profile-username-tag">@username</span>
+                  <span class="profile-dot">•</span>
+                  <span id="ph-joined-date" class="profile-joined-date">Joined Memory Vault</span>
+                </div>
+              </div>
+
+              <!-- Symmetrical Equal Grid for Phone & Birthday -->
+              <div class="profile-info-grid">
+                <!-- Phone Info Card -->
+                <div id="ph-phone-row" class="profile-info-card phone-card">
+                  <div class="info-card-icon">📱</div>
+                  <div class="info-card-body">
+                    <span class="info-card-label">Mobile Number</span>
+                    <strong id="ph-phone-val" class="info-card-val">N/A</strong>
+                  </div>
+                </div>
+
+                <!-- Birthday Info Card -->
+                <div id="ph-birthday-row" class="profile-info-card bday-card">
+                  <div class="info-card-icon">🎂</div>
+                  <div class="info-card-body">
+                    <span class="info-card-label">Birthday</span>
+                    <strong id="ph-birthday-val" class="info-card-val">Not set</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bio Quote Text -->
+              <p id="ph-bio" class="profile-bio-text">Living life, capturing every single memory. ✨</p>
+
+              <!-- Dedicated Centered Action Toolbar -->
+              <div class="profile-actions-toolbar" id="ph-actions-toolbar">
+                <button type="button" id="ph-message-btn" class="profile-action-pill primary" onclick="openProfileMessenger(activeProfileUsername)">
+                  <span>💬</span> <span>Direct Message</span>
+                </button>
+                <button type="button" id="ph-follow-btn" class="profile-action-pill follow" onclick="toggleProfileFollow()">
+                  <span id="ph-follow-icon">➕</span> <span id="ph-follow-text">Follow</span>
+                </button>
+                <button type="button" id="ph-birthday-preview-btn" class="profile-action-pill festive" onclick="previewBirthdayWish()" title="Test Birthday Celebration Animation">
+                  <span>🎂</span> <span>Birthday Wish</span>
+                </button>
+                <button type="button" id="ph-change-phone-btn" class="profile-action-pill secondary" onclick="openChangePhoneModal()" title="Change Mobile Number">
+                  <span>📱</span> <span>Change Number</span>
+                </button>
+                <button type="button" id="ph-edit-btn" class="profile-action-pill secondary" onclick="openEditProfileModal()">
+                  <span>✏️</span> <span>Edit Profile</span>
+                </button>
+                <button type="button" id="ph-privacy-toggle-btn" class="profile-action-pill secondary" onclick="quickTogglePrivacy(event)" title="Toggle Account Permission">
+                  <span>🛡️</span> <span>Permission: 🌐 Public</span>
+                </button>
+                <button type="button" class="profile-action-pill upload" onclick="openModal('upload-modal')">
+                  <span>🚀</span> <span>Upload Photo</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Social Metrics Bar -->
+            <div class="profile-metrics-bar" id="ph-metrics-bar">
+              <div class="metric-item">
+                <span class="metric-val" id="ph-stat-uploads">0</span>
+                <span class="metric-lbl">Memories Uploaded</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-val" id="ph-stat-likes">0</span>
+                <span class="metric-lbl">Likes Received ❤️</span>
+              </div>
+              <div class="metric-item" style="cursor:pointer;" onclick="switchProfileTab('followers')">
+                <span class="metric-val" id="ph-stat-followers">0</span>
+                <span class="metric-lbl">Followers 👥</span>
+              </div>
+              <div class="metric-item" style="cursor:pointer;" onclick="switchProfileTab('following')">
+                <span class="metric-val" id="ph-stat-following">0</span>
+                <span class="metric-lbl">Following 🌟</span>
+              </div>
+            </div>
+
+            <!-- Profile Nav Tabs -->
+            <div class="profile-nav-tabs" id="ph-nav-tabs">
+              <button class="profile-tab-btn active" id="ptab-btn-grid" onclick="switchProfileTab('grid')">
+                🖼️ Uploads Grid (<span id="ph-tab-grid-count">0</span>)
+              </button>
+              <button class="profile-tab-btn" id="ptab-btn-timeline" onclick="switchProfileTab('timeline')">
+                📅 Memory Timeline
+              </button>
+              <button class="profile-tab-btn" id="ptab-btn-followers" onclick="switchProfileTab('followers')">
+                👥 Followers (<span id="ph-tab-followers-count">0</span>)
+              </button>
+              <button class="profile-tab-btn" id="ptab-btn-following" onclick="switchProfileTab('following')">
+                🌟 Following (<span id="ph-tab-following-count">0</span>)
+              </button>
+            </div>
+          </div>
+
+          <!-- Private Account Lock Screen (Visible to non-Soumya viewers on Private Profiles) -->
+          <div id="ph-lock-screen" class="private-profile-lock-screen glass-panel" style="display:none; text-align:center; padding:50px 20px; margin-top:20px; border-radius:var(--radius-lg); border:1px solid rgba(255,145,0,0.3); background:rgba(18,20,29,0.7);">
+            <div style="font-size:52px; margin-bottom:14px; animation:floatLogo 3s ease-in-out infinite;">🔒</div>
+            <h2 style="font-size:22px; font-weight:800; color:#fff; margin-bottom:8px;">This Profile is Private</h2>
+            <p style="font-size:14px; color:var(--text-secondary); max-width:460px; margin:auto; line-height:1.5;">
+              Photos and memory timeline of <strong id="ph-locked-username" style="color:var(--accent-cyan);">@username</strong> are private. Send a request to connect and view their memories.
+            </p>
+            <div style="margin-top:20px;">
+              <button id="ph-lock-request-btn" class="btn-primary-3d" style="width:auto; padding:10px 24px; font-size:14px; background:linear-gradient(135deg, #00f5d4, #7c4dff);" onclick="sendDirectChatRequest(activeProfileUsername)">
+                <span>➕</span> <span>Send Follow & Message Request</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Profile Tab 1: Uploads Grid -->
+          <div id="ptab-content-grid" class="profile-tab-content active" style="margin-top:20px;">
+            <div id="profile-gallery-grid" class="gallery-grid"></div>
+          </div>
+
+          <!-- Profile Tab 2: Memory Timeline Stream -->
+          <div id="ptab-content-timeline" class="profile-tab-content" style="margin-top:20px; display:none;">
+            <div id="profile-timeline-stream" class="timeline-container"></div>
+          </div>
+
+          <!-- Profile Tab 3: Followers List -->
+          <div id="ptab-content-followers" class="profile-tab-content" style="margin-top:20px; display:none;">
+            <div id="profile-followers-list" class="users-social-grid"></div>
+          </div>
+
+          <!-- Profile Tab 4: Following List -->
+          <div id="ptab-content-following" class="profile-tab-content" style="margin-top:20px; display:none;">
+            <div id="profile-following-list" class="users-social-grid"></div>
+          </div>
+        </section>
+
+        <!-- ==========================================================================
+             SPECIAL EXCLUSIVE "ONLY FOR YOU" (PHOTOSHOP CUTOUTS & SOUNDSCAPE) SECTION
+             ========================================================================== -->
+        <section id="only-for-you-section-wrap" style="display:none; margin-bottom:40px;">
+          <!-- Special Hero Banner -->
+          <div class="only-for-you-hero-card glass-panel">
+            <div class="special-badge-pill">
+              <span class="pulse-sparkle">✨</span>
+              <span>EXCLUSIVE ARTWORK & SOUNDSCAPE • ONLY FOR SUMANA</span>
+              <span class="pulse-sparkle">💖</span>
+            </div>
+            
+            <h1 class="special-vault-title">✨ Only For You 💖</h1>
+            <p class="special-vault-subtitle">Handcrafted Photoshop Cutouts, Dreamscape Memories & Romantic Soundscapes</p>
+
+            <!-- Persistent Audio Controller Ribbon -->
+            <div class="special-audio-bar">
+              <div class="audio-info-wrap">
+                <div class="equalizer-waves" id="special-equalizer-waves">
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                </div>
+                <div style="text-align:left;">
+                  <div style="font-size:13.5px; font-weight:800; color:#fff;" id="special-audio-title">🎵 Romantic Soundscape — Endless Loop</div>
+                  <div style="font-size:11px; color:var(--accent-cyan);" id="special-audio-status">🔊 Sound is playing automatically in background</div>
+                </div>
+              </div>
+
+              <div class="audio-controls-wrap">
+                <button type="button" id="special-audio-toggle-btn" class="special-audio-btn active" onclick="toggleOnlyForYouAudio()">
+                  <span id="special-audio-btn-icon">🔊</span>
+                  <span id="special-audio-btn-text">Audio Playing (Turn Off)</span>
+                </button>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="font-size:12px;">🔈</span>
+                  <input type="range" id="special-audio-volume" min="0" max="1" step="0.05" value="0.75" oninput="setOnlyForYouVolume(this.value)" style="width:70px; accent-color:var(--accent-cyan); cursor:pointer;">
+                  <span style="font-size:12px;">🔊</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 1: 3D Animated Cutouts Showcase -->
+          <div style="margin-top:32px; margin-bottom:16px; text-align:left;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:22px;">🎨</span>
+              <h2 style="font-size:20px; font-weight:800; color:#fff; margin:0;">Transparent Cutouts Collection</h2>
+            </div>
+            <p style="font-size:13px; color:var(--text-secondary); margin:4px 0 0 0;">Zero-background Photoshop artworks with floating 3D ambient glows and poetic captions</p>
+          </div>
+
+          <div id="special-cutouts-grid" class="special-cutouts-container">
+            <!-- Dynamically populated from /api/only-for-you -->
+          </div>
+
+          <!-- Section 2: Framed Memories & Portraits -->
+          <div style="margin-top:40px; margin-bottom:16px; text-align:left;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:22px;">📸</span>
+              <h2 style="font-size:20px; font-weight:800; color:#fff; margin:0;">Cherished Memories & Moments</h2>
+            </div>
+            <p style="font-size:13px; color:var(--text-secondary); margin:4px 0 0 0;">HD captured memories celebrating laughter, warmth, and timeless moments</p>
+          </div>
+
+          <div id="special-portraits-grid" class="special-portraits-container">
+            <!-- Dynamically populated from /api/only-for-you -->
+          </div>
+        </section>
+
+        <!-- Photos & Memories Section -->
+        <section id="photos-section-wrap">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+            <h2 id="view-title" style="font-size:var(--font-h2); font-weight:800;">📸 Photo Library</h2>
+          </div>
+
+          <!-- Interactive Member Filter Bar (Individual Member Profiles Switcher) -->
+          <div id="member-filter-bar" class="member-filter-bar">
+            <span style="font-size:12px; font-weight:800; color:var(--text-muted); display:flex; align-items:center; gap:6px;">
+              <span>👤</span> <span>MEMBERS:</span>
+            </span>
+            <div id="member-chips-container" style="display:flex; align-items:center; gap:8px; overflow-x:auto; flex:1; padding:2px 0;">
+              <!-- Dynamically populated: Soumya, Sumana, and member chips -->
+            </div>
+          </div>
+
+          <!-- Interactive Albums Section Wrap (Visible when in Albums View) -->
+          <div id="albums-section-wrap" style="display:none; margin-bottom:24px;">
+            <!-- Album Controls & Filters Bar -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+              <div>
+                <h3 style="font-size:18px; font-weight:800; margin:0; display:flex; align-items:center; gap:8px;">
+                  <span>✨</span> <span>Cinematic 3D Memory Albums</span>
+                </h3>
+                <p style="font-size:12px; color:var(--text-secondary); margin:4px 0 0 0;">
+                  Experience photos inside interactive turning books, tree canopies, 35mm film reels, cosmic orbits & galleries!
+                </p>
+              </div>
+              <button type="button" class="btn-primary-3d" onclick="openCreateAlbumModal()" style="display:inline-flex; align-items:center; gap:8px; padding:10px 18px; border-radius:12px; font-size:13px; cursor:pointer;">
+                <span>➕</span> <span>Create New Album</span>
+              </button>
+            </div>
+
+            <!-- 6 Interactive Style Filter Tabs -->
+            <div class="album-style-filters" id="album-style-filters">
+              <button type="button" class="album-filter-pill active" onclick="filterAlbumsByStyle('all', this)">✨ All Styles (<span id="count-all-albums">0</span>)</button>
+              <button type="button" class="album-filter-pill" onclick="filterAlbumsByStyle('flipbook', this)">📖 3D Flipbook</button>
+              <button type="button" class="album-filter-pill" onclick="filterAlbumsByStyle('tree', this)">🌳 Tree of Life</button>
+              <button type="button" class="album-filter-pill" onclick="filterAlbumsByStyle('filmstrip', this)">🎞️ Film Reel</button>
+              <button type="button" class="album-filter-pill" onclick="filterAlbumsByStyle('orbit', this)">🌌 Galaxy Orbit</button>
+              <button type="button" class="album-filter-pill" onclick="filterAlbumsByStyle('scrapbook', this)">📸 Scrapbook</button>
+              <button type="button" class="album-filter-pill" onclick="filterAlbumsByStyle('museum', this)">🏛️ Art Museum</button>
+            </div>
+
+            <!-- Albums Grid List -->
+            <div id="albums-list" class="albums-grid"></div>
+          </div>
+
+          <!-- Interactive Romantic Favorites Section (Big Pink Heart Shatter Screen) -->
+          <div id="favorites-section-wrap" style="display:none; margin-bottom:24px;">
+            <!-- Heart Unlock Stage (Initial State: Big Pink Glowing Pulsing Heart) -->
+            <div id="favorites-heart-stage" class="favorites-heart-stage">
+              <canvas id="heart-particles-canvas" class="heart-particles-canvas"></canvas>
+
+              <div class="favorites-heart-card" id="favorites-heart-card" onclick="triggerHeartShatterReveal()" title="Click to Shatter the Heart & Reveal Favorite Memories ✨">
+                <div class="heart-floating-sparkles">
+                  <span class="sparkle s1">✨</span>
+                  <span class="sparkle s2">💖</span>
+                  <span class="sparkle s3">🌸</span>
+                  <span class="sparkle s4">✨</span>
+                  <span class="sparkle s5">💫</span>
+                </div>
+
+                <div class="big-pink-crystal-heart" id="big-pink-crystal-heart">
+                  <svg viewBox="0 0 100 90" class="heart-svg">
+                    <defs>
+                      <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ff4081" />
+                        <stop offset="30%" stop-color="#ff1493" />
+                        <stop offset="70%" stop-color="#ff80ab" />
+                        <stop offset="100%" stop-color="#ff007f" />
+                      </linearGradient>
+                      <filter id="heartGlow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="4" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                      </filter>
+                    </defs>
+                    <path d="M 50,85 A 25,25 0 0,1 5,45 C 5,20 25,10 50,30 C 75,10 95,20 95,45 A 25,25 0 0,1 50,85 Z" fill="url(#heartGrad)" filter="url(#heartGlow)" />
+                  </svg>
+                  <div class="heart-inner-icon">💖</div>
+                  <div class="heart-ripple-rings">
+                    <span class="ring r1"></span>
+                    <span class="ring r2"></span>
+                  </div>
+                </div>
+
+                <div class="heart-unlock-text">
+                  <h2 class="heart-unlock-title">💖 FAVORITE MEMORIES 💖</h2>
+                  <p class="heart-unlock-subtitle">হৃদয়ে লুকানো সবচেয়ে প্রিয় মুহূর্তগুলো দেখতে হৃদয়ে স্পর্শ করুন</p>
+                  <div class="heart-tap-pill">
+                    <span>✨</span> <span>Tap Heart to Shatter & Reveal</span> <span>✨</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Favorites Unlocked Toolbar (Shown after heart shatters) -->
+            <div id="favorites-unlocked-toolbar" class="favorites-unlocked-toolbar" style="display:none; flex-direction:column; gap:12px; align-items:stretch;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="font-size:22px; filter:drop-shadow(0 0 8px #ff4081);">💖</span>
+                  <div>
+                    <h3 style="font-size:16px; font-weight:800; margin:0; color:#fff;">Favorite Memories Collection</h3>
+                    <p style="font-size:11px; color:var(--text-muted); margin:2px 0 0 0;" id="favorites-count-label">Unlocked photos</p>
+                  </div>
+                </div>
+                <button type="button" class="btn-primary-3d" onclick="relockFavoritesHeart()" style="background:linear-gradient(135deg, #ff4081, #7c4dff); font-size:12px; padding:8px 16px; border-radius:12px; display:inline-flex; align-items:center; gap:6px;">
+                  <span>💔</span> <span>Relive Heart Shatter Animation</span>
+                </button>
+              </div>
+              <!-- 7 Cinematic Animation Effects Switcher Bar -->
+              <div id="favorites-fx-selector-container"></div>
+            </div>
+          </div>
+
+          <!-- Video Vault Section Header (Visible when in Videos View) -->
+          <div id="videos-section-wrap" style="display:none; margin-bottom:20px;">
+            <div class="glass-panel" style="padding:18px 24px; border-radius:20px; background:linear-gradient(135deg, rgba(124, 77, 255, 0.18), rgba(0, 229, 255, 0.08)); border:1.5px solid rgba(124, 77, 255, 0.35); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="font-size:32px; filter:drop-shadow(0 0 10px rgba(0,229,255,0.6));">🎬</div>
+                <div>
+                  <h3 style="font-size:18px; font-weight:800; margin:0; color:#fff; display:flex; align-items:center; gap:8px;">
+                    <span>Cinematic Video Vault</span>
+                    <span style="font-size:11px; padding:3px 8px; border-radius:8px; background:rgba(0,229,255,0.15); border:1px solid rgba(0,229,255,0.35); color:var(--accent-cyan);">Max 30 MB</span>
+                  </h3>
+                  <p style="font-size:12.5px; color:var(--text-secondary); margin:3px 0 0 0;">
+                    এখানে শুধুমাত্র ভিডিও ফাইল (MP4, MOV, WEBM, MKV) সংরক্ষিত ও প্লেব্যাক করা যায় (সর্বোচ্চ ৩০ MB)
+                  </p>
+                </div>
+              </div>
+              <button type="button" class="btn-primary-3d" onclick="openModal('upload-modal', 'video')" style="background:linear-gradient(135deg, #7c4dff, #00e5ff); padding:10px 20px; border-radius:14px; display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:700;">
+                <span>📹</span> <span>Upload Video (Max 30 MB)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Photo Masonry Gallery Grid -->
+          <div id="gallery-grid" class="gallery-grid"></div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Mobile Bottom Navigation Bar (Section 40.5) -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+      <div class="mobile-nav-item active" data-mobile-view="dashboard" onclick="switchView('dashboard')">
+        <span class="icon">⚡</span>
+        <span>Home</span>
+      </div>
+      <div class="mobile-nav-item" data-mobile-view="all" onclick="switchView('all', 'Photos')">
+        <span class="icon">🖼️</span>
+        <span>Photos</span>
+      </div>
+      <div class="mobile-nav-item" id="mobile-nav-only-for-you" data-mobile-view="only-for-you" onclick="switchView('only-for-you', 'Only For You 💖')" style="display:none;">
+        <span class="icon" style="filter:drop-shadow(0 0 6px #ff4081);">✨</span>
+        <span style="color:#ff4081; font-weight:800;">Special</span>
+      </div>
+      <div class="mobile-nav-item" data-mobile-view="music" onclick="switchView('music', 'Music Vault 🎵')">
+        <span class="icon">🎵</span>
+        <span>Music</span>
+      </div>
+      <div class="mobile-nav-item" data-mobile-view="profile-hub" onclick="openProfileHub(currentUser?.username)">
+        <span class="icon">👤</span>
+        <span>Profile</span>
+      </div>
+      <div class="mobile-nav-item" onclick="openModal('upload-modal')">
+        <span class="icon" style="color:var(--accent-purple); font-size:24px;">➕</span>
+        <span>Upload</span>
+      </div>
+    </nav>
+
+  </div>
+
+  <!-- Hidden Global Audio Stream Element -->
+  <audio id="global-audio-element" preload="auto" crossorigin="anonymous" style="display:none;"></audio>
+
+  <!-- Floating Bulk Selection Toolbar -->
+  <div id="bulk-toolbar" class="bulk-toolbar">
+    <span id="selected-count-text" style="font-weight:700;">0 Selected</span>
+    <button id="bulk-fav-btn" class="btn-upload" style="background:rgba(255,255,255,0.1);" onclick="executeBulkAction('favorite')">❤️ Favorite</button>
+    <button id="bulk-trash-btn" class="btn-upload" style="background:rgba(255,145,0,0.2); border:1px solid rgba(255,145,0,0.5); color:#ff9100;" onclick="executeBulkAction('trash')">🗑️ Move to Trash</button>
+    <button id="bulk-restore-btn" class="btn-upload" style="background:rgba(0,230,118,0.2); border:1px solid rgba(0,230,118,0.5); color:#00e676;" onclick="executeBulkAction('restore')">🔄 Restore</button>
+    <button id="bulk-delete-btn" class="btn-upload" style="background:rgba(255,23,68,0.2); border:1px solid rgba(255,23,68,0.5); color:#ff1744;" onclick="executeBulkAction('delete')">💥 Delete Forever</button>
+  </div>
+
+  <!-- Fullscreen 3D Photo & Video Viewer Modal -->
+  <div id="viewer-modal" class="modal-overlay">
+    <div class="viewer-main">
+      <button class="btn-icon" style="position:absolute; top:20px; left:20px;" onclick="prevPhoto()">◀</button>
+      <img id="viewer-img" class="viewer-img" src="" alt="Viewer Media">
+      <video id="viewer-video" class="viewer-video" controls playsinline preload="auto" style="display:none; max-width:90%; max-height:85vh; border-radius:14px; box-shadow:0 15px 50px rgba(0,0,0,0.85); outline:none;"></video>
+      <button class="btn-icon" style="position:absolute; top:20px; right:380px;" onclick="nextPhoto()">▶</button>
+      <button class="btn-icon" style="position:absolute; top:20px; right:430px;" onclick="closeViewer()">✖</button>
+    </div>
+
+    <!-- EXIF & Engagement Sidebar Drawer -->
+    <div class="viewer-drawer">
+      <!-- Clean Memory Header (No Technical Camera Filenames) -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+        <span class="genre-tag romantic" style="font-size:12px; padding:4px 10px;">✨ Cloud Memory</span>
+        <span style="font-size:12px; color:var(--text-muted);" id="viewer-date">Date</span>
+      </div>
+
+      <!-- Live Interactive Like Button Bar -->
+      <div style="margin-bottom:16px; display:flex; gap:10px; align-items:center;">
+        <button id="viewer-like-btn" class="btn-like-main" onclick="toggleViewerLike()">
+          <span id="viewer-like-icon" class="like-heart-icon">🤍</span>
+          <span id="viewer-like-text" style="font-weight:700; font-size:14px;">Like</span>
+          <span id="viewer-like-count" class="like-badge-count">0</span>
+        </button>
+        <span id="viewer-like-status" style="font-size:11px; color:var(--text-muted);">Click ❤️ to like this photo</span>
+      </div>
+
+      <!-- Uploader Profile Attribution Card -->
+      <div style="margin-bottom:16px; padding:12px; background:rgba(255,255,255,0.04); border-radius:var(--radius-sm); border:1px solid var(--glass-border);">
+        <h4 style="font-size:11px; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px;">Posted By Profile</h4>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span id="viewer-uploader-avatar" style="font-size:26px;">👨‍💻</span>
+          <div style="flex:1;">
+            <div id="viewer-uploader-name" style="font-weight:700; font-size:15px; color:var(--accent-cyan);">Soumya</div>
+            <div id="viewer-uploader-username" style="font-size:11px; color:var(--text-muted);">@Soumya</div>
+          </div>
+        </div>
+        <button id="viewer-filter-btn" class="btn-upload" style="margin-top:10px; width:100%; height:32px; font-size:12px; background:rgba(0,229,255,0.15); border:1px solid rgba(0,229,255,0.3); color:var(--accent-cyan); justify-content:center;" onclick="filterByViewerUploader()">
+          🔍 View Only Their Photos
+        </button>
+      </div>
+
+      <!-- Live Comments Stream Section (Open for Everyone) -->
+      <div class="comments-section-wrap">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:13px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:6px;">
+            <span>💬</span> <span>Comments (<span id="viewer-comments-count">0</span>)</span>
+          </h4>
+          <span style="font-size:10px; color:var(--accent-cyan); background:rgba(0,229,255,0.1); padding:2px 8px; border-radius:10px;">Public Feed</span>
+        </div>
+
+        <!-- Quick Emoji Reactions -->
+        <div class="emoji-quick-bar">
+          <span class="emoji-pill" onclick="quickCommentEmoji('😍')">😍</span>
+          <span class="emoji-pill" onclick="quickCommentEmoji('❤️')">❤️</span>
+          <span class="emoji-pill" onclick="quickCommentEmoji('🔥')">🔥</span>
+          <span class="emoji-pill" onclick="quickCommentEmoji('🌸')">🌸</span>
+          <span class="emoji-pill" onclick="quickCommentEmoji('✨')">✨</span>
+          <span class="emoji-pill" onclick="quickCommentEmoji('🥺')">🥺</span>
+          <span class="emoji-pill" onclick="quickCommentEmoji('👏')">👏</span>
+          <span class="emoji-pill" onclick="quickCommentEmoji('🎉')">🎉</span>
+        </div>
+
+        <!-- Scrollable Comments Feed -->
+        <div id="viewer-comments-list" class="comments-feed-box">
+          <!-- Populated dynamically via JS -->
+          <div style="text-align:center; padding:15px; color:var(--text-muted); font-size:12px;">No comments yet. Be the first to say something sweet! 💖</div>
+        </div>
+
+        <!-- Add Comment Form -->
+        <form id="viewer-comment-form" onsubmit="handleCommentSubmit(event)" style="margin-top:10px;">
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="viewer-comment-input" placeholder="Write a comment..." maxlength="300" required autocomplete="off"
+              style="flex:1; background:rgba(0,0,0,0.3); border:1px solid var(--glass-border); padding:8px 12px; border-radius:var(--radius-sm); color:var(--text-primary); font-size:12px;">
+            <button type="submit" class="btn-primary-3d" style="width:auto; padding:8px 14px; font-size:12px; border-radius:var(--radius-sm);">
+              Send 🚀
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Technical EXIF & Specs Accordion -->
+      <details style="margin-top:16px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border); border-radius:var(--radius-sm); padding:8px 12px; cursor:pointer;">
+        <summary style="font-size:12px; font-weight:700; color:var(--text-secondary); outline:none;">
+          📷 Camera EXIF & File Details
+        </summary>
+        <div style="margin-top:10px; font-size:12px; color:var(--text-muted);">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>Camera:</span> <strong id="viewer-camera" style="color:var(--text-primary);">Camera Specs</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>Resolution:</span> <strong id="viewer-resolution" style="color:var(--text-primary);">Dimensions</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>File Size:</span> <strong id="viewer-size" style="color:var(--text-primary);">File Size</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>Integrity:</span> <strong id="viewer-hash" style="color:var(--accent-blue);">SHA-256 Validated</strong>
+          </div>
+        </div>
+      </details>
+
+      <div style="margin-top:16px; display:flex; flex-direction:column; gap:8px;">
+        <button class="btn-primary-3d" onclick="openWallpaperModal()">Wallpaper Mode 🖼️</button>
+        <button class="btn-primary-3d" style="background:rgba(255,255,255,0.1);" onclick="openShareModal()">QR Code Share 🔗</button>
+        
+        <!-- Normal Gallery: Move to Trash -->
+        <button id="viewer-trash-btn" class="btn-primary-3d" style="background:rgba(255,145,0,0.2); border:1px solid rgba(255,145,0,0.5); color:#ff9100;" onclick="trashPhotoFromViewer()">
+          🗑️ Move to Trash
+        </button>
+
+        <!-- In Trash View: Restore & Permanent Delete Actions -->
+        <div id="viewer-trash-actions-row" style="display:none; gap:8px; width:100%;">
+          <button class="btn-primary-3d" style="flex:1; background:rgba(0,230,118,0.25); border:1px solid rgba(0,230,118,0.5); color:#00e676; margin:0;" onclick="restorePhotoFromViewer()">
+            🔄 Restore
+          </button>
+          <button class="btn-primary-3d" style="flex:1; background:rgba(255,23,68,0.25); border:1px solid rgba(255,23,68,0.5); color:#ff1744; margin:0;" onclick="permanentlyDeletePhotoFromViewer()">
+            💥 Delete Forever
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       DEDICATED LUXURY VIP ARTWORK SHOWCASE & 4K DOWNLOAD LIGHTBOX MODAL
+       ========================================================================== -->
+  <div id="special-artwork-modal" class="modal-overlay" onclick="if(event.target===this) closeCutoutLightbox()">
+    <div class="special-artwork-modal-card glass-panel">
+      <!-- Top Close / Controls Bar -->
+      <div class="special-artwork-topbar">
+        <div class="special-modal-badge">
+          <span class="pulse-sparkle">💖</span>
+          <span id="sam-badge-text">EXCLUSIVE MASTERPIECE • SUMANA</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button type="button" class="btn-special-control" onclick="toggleArtworkZoom()" title="Zoom / Fit Artwork">
+            <span id="sam-zoom-icon">🔍</span> <span id="sam-zoom-text">Zoom</span>
+          </button>
+          <button type="button" class="btn-special-close" onclick="closeCutoutLightbox()" title="Close Showcase">✖</button>
+        </div>
+      </div>
+
+      <!-- Main Central Floating Canvas -->
+      <div class="special-artwork-stage" id="sam-stage-container">
+        <div class="special-modal-ambient-glow" id="sam-ambient-glow"></div>
+        <img id="sam-artwork-img" class="special-modal-artwork-img" src="" alt="Artwork Showcase">
+      </div>
+
+      <!-- Bottom Luxury Info & Download Bar -->
+      <div class="special-artwork-bottom-bar">
+        <div class="sam-details-column">
+          <div class="sam-title-row">
+            <h2 id="sam-title" class="sam-title-text">Artwork Title</h2>
+            <span id="sam-tag" class="cutout-tag-pill">✨ Masterpiece</span>
+          </div>
+          <p id="sam-quote" class="sam-quote-text">“Poetic Quote”</p>
+          <p id="sam-caption" class="sam-caption-text">Caption description</p>
+        </div>
+
+        <div class="sam-actions-column">
+          <a id="sam-download-btn" href="#" download="" class="btn-download-glow" onclick="triggerLuxuryDownloadEffect(event)">
+            <span class="btn-dl-icon">⬇️</span>
+            <span class="btn-dl-text">Download Original PNG</span>
+            <span class="btn-dl-badge">4K Transparent</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       HEAD ADMIN USER MANAGEMENT MODAL (Soumya Privileges)
+       ========================================================================== -->
+  <div id="user-manager-modal" class="modal-overlay" onclick="if(event.target===this) closeModal('user-manager-modal')">
+    <div class="admin-modal-card" style="max-width: 680px; width: 95%; margin: auto; text-align: left; max-height: 85vh; display: flex; flex-direction: column;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid rgba(255,215,0,0.3); padding-bottom:12px;">
+        <div>
+          <h2 style="font-size:22px; font-weight:900; color:#ffd700; display:flex; align-items:center; gap:10px; margin:0; text-shadow:0 0 15px rgba(255,215,0,0.4);">
+            <span>👑</span> <span>HEAD ADMIN CONTROL PANEL</span>
+          </h2>
+          <p style="font-size:12px; color:var(--text-secondary); margin:4px 0 0 0;">Master Account: Soumya • Manage all user profiles & content</p>
+        </div>
+        <button class="btn-icon" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); font-size:16px; width:36px; height:36px;" onclick="closeModal('user-manager-modal')">✖</button>
+      </div>
+
+      <div style="margin-bottom:16px; font-size:13px; color:#e0e3ee; background:rgba(255,215,0,0.1); border:1px solid rgba(255,215,0,0.35); padding:10px 14px; border-radius:var(--radius-sm);">
+        👑 <strong>Head Admin Privileges:</strong> Soumya can view all member profiles and manage uploaded content. <strong style="color:#ff4081;">Sumana is permanently protected.</strong>
+      </div>
+
+      <!-- Quick Search / Filter Input for Users -->
+      <div style="margin-bottom:14px;">
+        <input type="text" id="admin-user-search-input" placeholder="🔍 Search member profile by name or username..." 
+          style="width:100%; background:rgba(0,0,0,0.5); border:1px solid rgba(255,215,0,0.35); padding:10px 14px; border-radius:var(--radius-sm); color:#fff; font-size:13px;"
+          oninput="filterAdminUserList(this.value)">
+      </div>
+
+      <!-- Dynamic Users List Container -->
+      <div id="admin-user-list-wrap" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-right:4px; max-height:48vh;">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: HIGH-RESOLUTION WALLPAPER CROP & DOWNLOAD STUDIO
+       ========================================================================== -->
+  <div id="wallpaper-modal" class="modal-overlay" style="z-index:100005;" onclick="if(event.target===this) closeModal('wallpaper-modal')">
+    <div class="login-card glass-panel wallpaper-modal-card" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2 style="font-size:20px; font-weight:800; display:flex; align-items:center; gap:8px;">
+          <span>🖼️</span> <span>Wallpaper Studio</span>
+        </h2>
+        <button type="button" class="btn-icon" onclick="closeModal('wallpaper-modal')" title="Close">✖</button>
+      </div>
+
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:14px;">Select your display ratio to crop and export ultra high-definition wallpapers.</p>
+
+      <!-- Live Wallpaper Aspect Preview Box -->
+      <div class="wallpaper-preview-wrapper">
+        <div id="wallpaper-preview-frame" class="wallpaper-preview-frame ratio-16-9">
+          <img id="wallpaper-preview-img" src="" alt="Wallpaper Preview" />
+        </div>
+      </div>
+
+      <!-- Aspect Ratio Switcher Grid -->
+      <div class="wallpaper-aspect-grid">
+        <div class="wallpaper-ratio-btn active" id="ratio-btn-16-9" onclick="selectWallpaperRatio('16:9', 16/9, this)">
+          <div class="ratio-icon">🖥️</div>
+          <div class="ratio-label">Desktop (16:9)</div>
+          <div class="ratio-sub">1920×1080 / 4K</div>
+        </div>
+        <div class="wallpaper-ratio-btn" id="ratio-btn-16-10" onclick="selectWallpaperRatio('16:10', 16/10, this)">
+          <div class="ratio-icon">💻</div>
+          <div class="ratio-label">Laptop (16:10)</div>
+          <div class="ratio-sub">1920×1200</div>
+        </div>
+        <div class="wallpaper-ratio-btn" id="ratio-btn-9-16" onclick="selectWallpaperRatio('9:16', 9/16, this)">
+          <div class="ratio-icon">📱</div>
+          <div class="ratio-label">Mobile (9:16)</div>
+          <div class="ratio-sub">1080×1920 (Portrait)</div>
+        </div>
+        <div class="wallpaper-ratio-btn" id="ratio-btn-1-1" onclick="selectWallpaperRatio('1:1', 1/1, this)">
+          <div class="ratio-icon">📸</div>
+          <div class="ratio-label">Square (1:1)</div>
+          <div class="ratio-sub">2048×2048 (Avatar)</div>
+        </div>
+      </div>
+
+      <!-- Download Button -->
+      <button type="button" id="download-wallpaper-btn" class="btn-primary-3d" style="width:100%; margin-top:14px;" onclick="downloadActiveWallpaper()">
+        📥 Download High-Res Wallpaper
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: REAL DYNAMIC QR CODE & PHOTO SHARE
+       ========================================================================== -->
+  <div id="share-modal" class="modal-overlay" style="z-index:100005;" onclick="if(event.target===this) closeModal('share-modal')">
+    <div class="login-card glass-panel share-modal-card" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2 style="font-size:20px; font-weight:800; display:flex; align-items:center; gap:8px;">
+          <span>🔗</span> <span>Share Memory</span>
+        </h2>
+        <button type="button" class="btn-icon" onclick="closeModal('share-modal')" title="Close">✖</button>
+      </div>
+
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:14px;">Scan this QR code with any smartphone camera or copy the direct cloud link.</p>
+
+      <!-- High-Definition QR Code Card -->
+      <div class="share-qr-wrapper">
+        <div id="share-qr-card" class="share-qr-card">
+          <canvas id="share-qr-canvas" style="display:none;"></canvas>
+          <div id="qr-container" class="qr-image-box">
+            <!-- Rendered QR -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Direct Link Copy Input -->
+      <div style="display:flex; gap:8px; align-items:center; margin:14px 0 10px;">
+        <input type="text" id="share-direct-link-input" class="auth-glass-input" readonly style="font-size:12px; padding:9px 12px; background:rgba(0,0,0,0.3);" />
+        <button type="button" class="btn-upload" style="flex-shrink:0; height:38px; padding:0 14px;" onclick="copyShareLink()">
+          📋 Copy
+        </button>
+      </div>
+
+      <!-- Actions: Native Share & Download QR -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+        <button type="button" class="btn-primary-3d" style="background:linear-gradient(135deg, #00f5d4, #00b4d8); margin:0;" onclick="triggerNativeShare()">
+          📲 Send / Share
+        </button>
+        <button type="button" class="btn-primary-3d" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); margin:0;" onclick="downloadQRCodeImage()">
+          ⬇️ Save QR Code
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: COMMUNITY MUSIC UPLOADER & TRACK CREATOR
+       ========================================================================== -->
+  <div id="add-music-modal" class="modal-overlay" style="z-index:100005;" onclick="if(event.target===this) closeModal('add-music-modal')">
+    <div class="login-card glass-panel" style="max-width:520px; width:100%; text-align:left;" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2 style="font-size:20px; font-weight:800; display:flex; align-items:center; gap:8px; margin:0;">
+          <span>🎵</span> <span>Add Song to Music Vault</span>
+        </h2>
+        <button type="button" class="btn-icon" onclick="closeModal('add-music-modal')" title="Close">✖</button>
+      </div>
+
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:14px; line-height:1.5;">
+        Upload your favorite music track to the Music Vault. Everyone can listen and enjoy! 🎶
+      </p>
+
+      <form id="add-music-form" onsubmit="handleAddMusicSubmit(event)">
+        <!-- Track Title Input -->
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:4px; color:var(--text-primary);">
+            Song Title <span style="color:var(--status-danger);">*</span>
+          </label>
+          <input type="text" id="music-input-title" class="auth-glass-input" placeholder="e.g. O Maahi / Kesariya / Romantic Melody" required style="width:100%; box-sizing:border-box;" />
+        </div>
+
+        <!-- Artist Name Input -->
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:4px; color:var(--text-primary);">
+            Artist / Singer
+          </label>
+          <input type="text" id="music-input-artist" class="auth-glass-input" placeholder="e.g. Arijit Singh / Shreya Ghoshal / Anupam Roy" style="width:100%; box-sizing:border-box;" />
+        </div>
+
+        <!-- Genre Selection Grid -->
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:4px; color:var(--text-primary);">
+            Genre & Mood
+          </label>
+          <select id="music-input-genre" class="auth-glass-input" style="width:100%; box-sizing:border-box; cursor:pointer;">
+            <option value="Romantic Song|💖">💖 Romantic Song (Love & Heartfelt)</option>
+            <option value="Sad Song|🌧️">🌧️ Sad Song (Emotional Melancholy)</option>
+            <option value="Enjoyful Song|🎉">🎉 Enjoyful & Dance (Upbeat Party)</option>
+            <option value="Melodic Song|🍃">🍃 Melodic & Acoustic (Pleasant Breeze)</option>
+            <option value="Devotional Song|🕊️">🕊️ Devotional & Soulful (Pure Peace)</option>
+            <option value="Lo-Fi & Chill|🎧">🎧 Lo-Fi & Chill (Relaxing Vibes)</option>
+            <option value="Rock & Pop|⚡">⚡ Rock & Pop (Energetic Beats)</option>
+          </select>
+        </div>
+
+        <!-- Audio File Upload Dropzone -->
+        <div style="margin-bottom:14px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:4px; color:var(--text-primary);">
+            Audio File <span style="color:var(--status-danger);">*</span>
+          </label>
+          <div id="music-file-dropzone" class="upload-dropzone" style="padding:18px 14px; text-align:center; cursor:pointer; border-radius:12px;" onclick="document.getElementById('music-file-input').click()">
+            <div style="font-size:28px; margin-bottom:4px;" id="music-dropzone-icon">📁</div>
+            <div style="font-size:13px; font-weight:700; color:var(--text-primary);" id="music-dropzone-label">Click or Drag & Drop audio file here</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Supported: MP3, WAV, M4A, OGG, AAC, FLAC (Max 100MB)</div>
+          </div>
+          <input type="file" id="music-file-input" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.mpeg" style="display:none;" onchange="handleMusicFileSelected(event)" required />
+        </div>
+
+        <!-- Live AI Arranged Preview Card -->
+        <div id="music-ai-preview-box" style="display:none; margin-bottom:16px; padding:14px; background:linear-gradient(135deg, rgba(255,20,147,0.12), rgba(124,77,255,0.15)); border:1.5px solid rgba(255,20,147,0.35); border-radius:14px;">
+          <div style="font-size:11px; font-weight:800; color:var(--accent-cyan); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+            <span>✨</span> <span>AI Playlist Card Preview (Auto Arranged)</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div id="preview-music-icon" style="width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg, #ff1493, #7c4dff); display:flex; align-items:center; justify-content:center; font-size:20px; color:#fff; box-shadow:0 4px 12px rgba(255,20,147,0.4);">💖</div>
+            <div style="flex:1; min-width:0;">
+              <div id="preview-music-title" style="font-size:14.5px; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Song Title</div>
+              <div id="preview-music-artist" style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Artist Name</div>
+            </div>
+            <span id="preview-music-genre" class="genre-tag romantic" style="font-size:10.5px; padding:3px 8px;">Romantic Song 💖</span>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="music-submit-btn" class="btn-primary-3d" style="width:100%; font-size:14px; font-weight:800; padding:12px; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span>🚀</span> <span>UPLOAD & ARRANGE IN PLAYLIST</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: CREATE NEW INTERACTIVE 3D ALBUM
+       ========================================================================== -->
+  <div id="create-album-modal" class="modal-overlay" style="z-index:100005;" onclick="if(event.target===this) closeModal('create-album-modal')">
+    <div class="login-card glass-panel create-album-modal-card" style="max-width:580px; width:95%; text-align:left; max-height:90vh; overflow-y:auto;" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2 style="font-size:20px; font-weight:800; display:flex; align-items:center; gap:8px; margin:0;">
+          <span>✨</span> <span>Create Interactive 3D Album</span>
+        </h2>
+        <button type="button" class="btn-icon" onclick="closeModal('create-album-modal')" title="Close">✖</button>
+      </div>
+
+      <p style="font-size:12px; color:var(--text-secondary); margin-bottom:14px;">
+        Choose one of the 6 immersive 3D presentation styles to package your photos into a magical living memory.
+      </p>
+
+      <form id="create-album-form" onsubmit="handleCreateAlbumSubmit(event)">
+        <!-- Album Name -->
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:4px; color:var(--text-primary);">
+            Album Title <span style="color:var(--status-danger);">*</span>
+          </label>
+          <input type="text" id="album-input-name" class="auth-glass-input" placeholder="e.g. Goa Trip 2026 / Birthday Memories / Golden Days" required style="width:100%; box-sizing:border-box;" />
+        </div>
+
+        <!-- Presentation Style Selector Grid (6 Researched Styles) -->
+        <div style="margin-bottom:14px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px; color:var(--text-primary);">
+            Choose Presentation Style <span style="color:var(--status-danger);">*</span>
+          </label>
+          <div class="album-style-picker-grid" id="album-style-picker-grid">
+            <!-- Style 1: 3D Flipbook -->
+            <div class="style-picker-card active" data-style="flipbook" onclick="selectAlbumCreateStyle('flipbook', this)">
+              <img src="assets/covers/cover_flipbook.jpg" class="style-thumb-img" alt="Flipbook" onerror="this.onerror=null; this.src='/assets/covers/cover_flipbook.jpg';" />
+              <div class="style-name">📖 3D Flipbook</div>
+              <div class="style-desc">Hardcover turning book pages with sound</div>
+            </div>
+
+            <!-- Style 2: Tree of Life -->
+            <div class="style-picker-card" data-style="tree" onclick="selectAlbumCreateStyle('tree', this)">
+              <img src="assets/covers/cover_tree.jpg" class="style-thumb-img" alt="Tree of Life" onerror="this.onerror=null; this.src='/assets/covers/cover_tree.jpg';" />
+              <div class="style-name">🌳 Tree of Life</div>
+              <div class="style-desc">Glowing botanical canopy with swaying frames</div>
+            </div>
+
+            <!-- Style 3: 35mm Filmstrip -->
+            <div class="style-picker-card" data-style="filmstrip" onclick="selectAlbumCreateStyle('filmstrip', this)">
+              <img src="assets/covers/cover_filmstrip.jpg" class="style-thumb-img" alt="Film Reel" onerror="this.onerror=null; this.src='/assets/covers/cover_filmstrip.jpg';" />
+              <div class="style-name">🎞️ 35mm Film Reel</div>
+              <div class="style-desc">Retro cinema spool with projector glow</div>
+            </div>
+
+            <!-- Style 4: Galaxy Orbit -->
+            <div class="style-picker-card" data-style="orbit" onclick="selectAlbumCreateStyle('orbit', this)">
+              <img src="assets/covers/cover_orbit.jpg" class="style-thumb-img" alt="Galaxy Orbit" onerror="this.onerror=null; this.src='/assets/covers/cover_orbit.jpg';" />
+              <div class="style-name">🌌 Cosmic Orbit</div>
+              <div class="style-desc">Rotating 3D celestial planetary rings</div>
+            </div>
+
+            <!-- Style 5: Scrapbook -->
+            <div class="style-picker-card" data-style="scrapbook" onclick="selectAlbumCreateStyle('scrapbook', this)">
+              <img src="assets/covers/cover_scrapbook.jpg" class="style-thumb-img" alt="Scrapbook" onerror="this.onerror=null; this.src='/assets/covers/cover_scrapbook.jpg';" />
+              <div class="style-name">📸 Scrapbook</div>
+              <div class="style-desc">Rustic clothesline with pinned polaroids</div>
+            </div>
+
+            <!-- Style 6: Virtual Museum -->
+            <div class="style-picker-card" data-style="museum" onclick="selectAlbumCreateStyle('museum', this)">
+              <img src="assets/covers/cover_museum.jpg" class="style-thumb-img" alt="Art Museum" onerror="this.onerror=null; this.src='/assets/covers/cover_museum.jpg';" />
+              <div class="style-name">🏛️ Art Gallery</div>
+              <div class="style-desc">Gilded gold frames & spotlit exhibition hall</div>
+            </div>
+          </div>
+          <input type="hidden" id="album-selected-style" value="flipbook" />
+        </div>
+
+        <!-- Description / Note -->
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:4px; color:var(--text-primary);">
+            Album Story / Description (Optional)
+          </label>
+          <input type="text" id="album-input-desc" class="auth-glass-input" placeholder="e.g. Unforgettable memories with loved ones" style="width:100%; box-sizing:border-box;" />
+        </div>
+
+        <!-- Direct Initial Photo Upload -->
+        <div style="margin-bottom:16px;">
+          <label style="display:block; font-size:12px; font-weight:700; margin-bottom:4px; color:var(--text-primary);">
+            Upload Initial Photos to this Album (Optional)
+          </label>
+          <div id="album-files-dropzone" class="upload-dropzone" style="padding:16px; text-align:center; cursor:pointer; border-radius:12px;" onclick="document.getElementById('album-initial-files-input').click()">
+            <div style="font-size:26px; margin-bottom:4px;" id="album-dropzone-icon">🖼️</div>
+            <div style="font-size:12px; font-weight:700; color:var(--text-primary);" id="album-dropzone-label">Click or Drag & Drop photos for this album</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">(JPG, PNG, WEBP, HEIC, MP4)</div>
+          </div>
+          <input type="file" id="album-initial-files-input" multiple accept="image/*,video/*" style="display:none;" onchange="handleAlbumInitialFilesSelected(event)" />
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="create-album-submit-btn" class="btn-primary-3d" style="width:100%; font-size:14px; font-weight:800; padding:12px; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span>🚀</span> <span>CREATE & OPEN ALBUM</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: FULLSCREEN 3D INTERACTIVE ALBUM PRESENTATION STAGE
+       ========================================================================== -->
+  <div id="album-stage-modal" class="album-stage-modal" style="display:none;">
+    <!-- Ambient Backdrop Lighting -->
+    <div class="album-stage-ambient-glow" id="stage-ambient-glow"></div>
+
+    <!-- Stage Top Control Bar -->
+    <div class="album-stage-topbar">
+      <!-- Left: Back Button & Album Info -->
+      <div style="display:flex; align-items:center; gap:14px; min-width:0;">
+        <button type="button" class="btn-icon stage-back-btn" onclick="closeAlbumStage()" title="Back to Albums (Esc)">
+          <span>⬅️</span> <span>Back</span>
+        </button>
+        <div style="min-width:0;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <h2 id="stage-album-title" style="font-size:18px; font-weight:800; margin:0; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              📖 Golden Storybook
+            </h2>
+            <span id="stage-album-badge" class="stage-style-badge">3D Flipbook</span>
+          </div>
+          <p id="stage-album-subtitle" style="font-size:11.5px; color:rgba(255,255,255,0.7); margin:2px 0 0 0;">
+            Page 1 of 12 • 12 Memories
+          </p>
+        </div>
+      </div>
+
+      <!-- Right: Action Buttons (Add Photos, Slideshow, Download, Close) -->
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button type="button" class="btn-stage-action" onclick="openUploadToActiveAlbum()" title="Upload photos directly to this album">
+          <span>➕</span> <span>Add Photos</span>
+        </button>
+        <button type="button" class="btn-stage-action" id="stage-slideshow-btn" onclick="toggleAlbumSlideshow()" title="Play Automatic Slideshow">
+          <span>▶</span> <span>Slideshow</span>
+        </button>
+        <button type="button" class="btn-stage-action" onclick="downloadActiveAlbumPhotos()" title="Download all photos from this album">
+          <span>⬇️</span> <span>Download</span>
+        </button>
+        <button type="button" class="btn-icon stage-close-btn" onclick="closeAlbumStage()" title="Close Stage (Esc)">✖</button>
+      </div>
+    </div>
+
+    <!-- Hidden Direct Album Photo Uploader Input -->
+    <input type="file" id="album-stage-photo-input" multiple accept="image/*,video/*" style="display:none;" onchange="handleDirectAlbumPhotoUpload(event)" />
+
+    <!-- Main Stage Viewport (Dynamic 3D Render Canvas) -->
+    <div class="album-stage-viewport" id="album-stage-viewport">
+      <!-- Injected dynamically by renderAlbumStage() -->
+    </div>
+
+    <!-- Stage Bottom Scrubbing / Navigation Bar -->
+    <div class="album-stage-bottombar" id="album-stage-bottombar">
+      <!-- Injected dynamically -->
+    </div>
+  </div>
+
+  <!-- Upload Modal -->
+  <div id="upload-modal" class="modal-overlay" onclick="if(event.target===this) closeModal('upload-modal')">
+    <div class="modal-card" style="max-width:540px; width:95%; margin:auto; text-align:left;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--glass-border); padding-bottom:10px;">
+        <h2 id="upload-modal-title" style="font-size:20px; font-weight:800; display:flex; align-items:center; gap:8px;">
+          <span>📸</span> <span>Upload Memories to Vault</span>
+        </h2>
+        <button class="btn-icon" onclick="closeModal('upload-modal')" title="Close (Esc)">✖</button>
+      </div>
+
+      <!-- Active Uploader Badge Info -->
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; background:rgba(0,229,255,0.08); border:1px solid rgba(0,229,255,0.25); padding:8px 12px; border-radius:var(--radius-sm); font-size:12px;">
+        <span id="upload-user-avatar">👤</span> <span>Posting from account:</span>
+        <strong id="upload-user-name" style="color:var(--accent-cyan);">Soumya</strong>
+      </div>
+
+      <!-- Dropzone -->
+      <div id="upload-dropzone" class="upload-dropzone">
+        <div id="upload-dropzone-icon" style="font-size:42px; margin-bottom:8px;">📂</div>
+        <p id="upload-dropzone-title" style="font-weight:700; font-size:15px; margin-bottom:4px;">Click or Drag & Drop Photos / Videos</p>
+        <p id="upload-dropzone-sub" style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">Supports JPG, PNG, WEBP, GIF, HEIC, MP4, MOV (Videos max 30 MB)</p>
+        <button type="button" class="btn-upload" id="browse-files-btn" style="margin:auto;">Browse Device Files 📁</button>
+      </div>
+      <input type="file" id="file-input-element" multiple accept="image/*,video/*" style="display:none;">
+
+      <!-- Selected Files Preview & Queue -->
+      <div id="upload-queue-container" style="display:none; margin-top:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px;">
+          <span id="upload-queue-count">0 Files Selected</span>
+          <button type="button" style="background:none; border:none; color:var(--status-danger); cursor:pointer; font-size:11px;" onclick="clearUploadQueue()">Clear All</button>
+        </div>
+        <div id="upload-file-list" style="max-height:120px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--text-muted); background:rgba(0,0,0,0.2); padding:8px; border-radius:var(--radius-sm);"></div>
+      </div>
+
+      <!-- Live Upload Progress Bar -->
+      <div id="upload-progress-container" style="display:none; margin-top:14px;">
+        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+          <span id="upload-status-text">Uploading files to vault...</span>
+          <span id="upload-percentage-text">0%</span>
+        </div>
+        <div class="storage-bar-bg" style="height:8px;">
+          <div id="upload-progress-bar" class="storage-bar-fill" style="width:0%; background:var(--accent-gradient);"></div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="margin-top:18px; display:flex; gap:10px; justify-content:flex-end;">
+        <button type="button" class="btn-primary-3d" style="background:rgba(255,255,255,0.1); width:auto; padding:10px 18px;" onclick="closeModal('upload-modal')">Cancel</button>
+        <button type="button" id="start-upload-btn" class="btn-primary-3d" style="width:auto; padding:10px 24px;" onclick="startUpload()">Upload to Vault 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Command Palette Modal (Ctrl + K) -->
+  <div id="command-palette-modal" class="modal-overlay" onclick="if(event.target===this) closeModal('command-palette-modal')">
+    <div class="command-palette-modal">
+      <!-- Header Search Input -->
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px; position:relative;">
+        <span style="font-size:22px; flex-shrink:0;">⌨️</span>
+        <input id="cmd-search-input" type="text" placeholder="Type a command or search memories... (Press Esc to exit)" autocomplete="off"
+          oninput="filterCommands(this.value)">
+        <button class="btn-icon" style="flex-shrink:0; font-size:14px;" onclick="closeModal('command-palette-modal')" title="Close (Esc)">✖</button>
+      </div>
+
+      <!-- Quick Category Pills -->
+      <div style="display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; padding-bottom:4px;">
+        <span class="genre-tag romantic" style="cursor:pointer;" onclick="document.getElementById('cmd-search-input').value='view'; filterCommands('view');">Navigation</span>
+        <span class="genre-tag enjoyful" style="cursor:pointer;" onclick="document.getElementById('cmd-search-input').value='action'; filterCommands('action');">Actions</span>
+        <span class="genre-tag sad" style="cursor:pointer;" onclick="document.getElementById('cmd-search-input').value='theme'; filterCommands('theme');">Settings</span>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:1px; background:var(--glass-border); margin-bottom:12px;"></div>
+
+      <!-- Command Items List -->
+      <div id="cmd-list" style="display:flex; flex-direction:column; gap:4px; max-height:360px; overflow-y:auto;">
+        <!-- Core Navigation -->
+        <div class="cmd-item active-cmd" data-cmd-title="Dashboard" onclick="closeModal('command-palette-modal'); switchView('dashboard')">
+          <span style="font-size:20px;">⚡</span>
+          <div style="flex:1;"><div style="font-weight:700;">Go to Dashboard</div><div style="font-size:11px; color:var(--text-muted);">Overview and system stats</div></div>
+          <span class="genre-tag sad">View</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Photos Library" onclick="closeModal('command-palette-modal'); switchView('all', 'Photo Library')">
+          <span style="font-size:20px;">🖼️</span>
+          <div style="flex:1;"><div style="font-weight:700;">Open Photo Library</div><div style="font-size:11px; color:var(--text-muted);">All uploaded photos and memories</div></div>
+          <span class="genre-tag sad">View</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Music Vault" onclick="closeModal('command-palette-modal'); switchView('music', 'Music Vault 🎵')">
+          <span style="font-size:20px;">🎵</span>
+          <div style="flex:1;"><div style="font-weight:700;">Open Music Vault</div><div style="font-size:11px; color:var(--text-muted);">14 Melodic tracks with speed & download</div></div>
+          <span class="genre-tag romantic">Music</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Upload Memories" onclick="closeModal('command-palette-modal'); openModal('upload-modal')">
+          <span style="font-size:20px;">➕</span>
+          <div style="flex:1;"><div style="font-weight:700;">Upload Photos & Videos</div><div style="font-size:11px; color:var(--text-muted);">Instant upload pipeline</div></div>
+          <span class="genre-tag enjoyful">Action</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Favorites" onclick="closeModal('command-palette-modal'); switchView('favorites', 'Favorite Memories')">
+          <span style="font-size:20px;">❤️</span>
+          <div style="flex:1;"><div style="font-weight:700;">Favorite Memories</div><div style="font-size:11px; color:var(--text-muted);">View your starred photos</div></div>
+          <span class="genre-tag romantic">View</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Create New 3D Album" onclick="closeModal('command-palette-modal'); openCreateAlbumModal()">
+          <span style="font-size:20px;">✨</span>
+          <div style="flex:1;"><div style="font-weight:700;">Create New 3D Album</div><div style="font-size:11px; color:var(--text-muted);">Flipbook, Tree, Film Reel, Orbit, Scrapbook & Gallery</div></div>
+          <span class="genre-tag enjoyful">Action</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Albums" onclick="closeModal('command-palette-modal'); switchView('albums', 'Photo Albums')">
+          <span style="font-size:20px;">📁</span>
+          <div style="flex:1;"><div style="font-weight:700;">Photo Albums</div><div style="font-size:11px; color:var(--text-muted);">Organized event albums</div></div>
+          <span class="genre-tag sad">View</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Recent" onclick="closeModal('command-palette-modal'); switchView('recent', 'Recently Added')">
+          <span style="font-size:20px;">🕒</span>
+          <div style="flex:1;"><div style="font-weight:700;">Recent Photos</div><div style="font-size:11px; color:var(--text-muted);">Latest uploads & edits</div></div>
+          <span class="genre-tag sad">View</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Videos" onclick="closeModal('command-palette-modal'); switchView('videos', 'Video Vault')">
+          <span style="font-size:20px;">🎬</span>
+          <div style="flex:1;"><div style="font-weight:700;">Video Vault</div><div style="font-size:11px; color:var(--text-muted);">HD video playback vault</div></div>
+          <span class="genre-tag enjoyful">View</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Theme Mode Mood Switcher" onclick="closeModal('command-palette-modal'); toggleTheme()">
+          <span style="font-size:20px;">🎨</span>
+          <div style="flex:1;"><div style="font-weight:700;">Cycle Visual Mood Theme</div><div style="font-size:11px; color:var(--text-muted);">Switch between Cyber, Sunset, Emerald, Light & Dark</div></div>
+          <span class="genre-tag enjoyful">Theme</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Theme Midnight Cyberpunk Neon AMOLED" onclick="closeModal('command-palette-modal'); setTheme('cyber')">
+          <span style="font-size:20px;">🌌</span>
+          <div style="flex:1;"><div style="font-weight:700;">Midnight Cyberpunk Mood</div><div style="font-size:11px; color:var(--text-muted);">AMOLED Tokyo Neon & Laser Glow</div></div>
+          <span class="genre-tag romantic">Neon</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Theme Royal Sunset Rose Gold" onclick="closeModal('command-palette-modal'); setTheme('sunset')">
+          <span style="font-size:20px;">🌅</span>
+          <div style="flex:1;"><div style="font-weight:700;">Royal Sunset Mood</div><div style="font-size:11px; color:var(--text-muted);">Warm Wine, Rose Gold & Amber Glow</div></div>
+          <span class="genre-tag calm">Sunset</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Theme Nordic Emerald Aurora Forest" onclick="closeModal('command-palette-modal'); setTheme('emerald')">
+          <span style="font-size:20px;">🌲</span>
+          <div style="flex:1;"><div style="font-weight:700;">Nordic Emerald Mood</div><div style="font-size:11px; color:var(--text-muted);">Jade Aurora & Deep Pine Forest</div></div>
+          <span class="genre-tag happy">Emerald</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Theme Deep Sapphire Ocean Abyss" onclick="closeModal('command-palette-modal'); setTheme('ocean')">
+          <span style="font-size:20px;">🌊</span>
+          <div style="flex:1;"><div style="font-weight:700;">Deep Sapphire Abyss Mood</div><div style="font-size:11px; color:var(--text-muted);">Bioluminescent Azure Trench & Ocean Reef</div></div>
+          <span class="genre-tag calm">Ocean</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Theme Amethyst Nebula Cosmic Galaxy" onclick="closeModal('command-palette-modal'); setTheme('galaxy')">
+          <span style="font-size:20px;">🪐</span>
+          <div style="flex:1;"><div style="font-weight:700;">Amethyst Nebula Mood</div><div style="font-size:11px; color:var(--text-muted);">Cosmic Stardust & Ultraviolet Quartz</div></div>
+          <span class="genre-tag romantic">Galaxy</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Theme Luxury 24K Gold VIP Obsidian" onclick="closeModal('command-palette-modal'); setTheme('gold')">
+          <span style="font-size:20px;">👑</span>
+          <div style="flex:1;"><div style="font-weight:700;">Luxury 24K Gold Mood</div><div style="font-size:11px; color:var(--text-muted);">Monaco VIP Obsidian & Amber Champagne</div></div>
+          <span class="genre-tag enjoyful">Gold</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Theme Tokyo Sakura Glow Cherry Blossom" onclick="closeModal('command-palette-modal'); setTheme('sakura')">
+          <span style="font-size:20px;">🌸</span>
+          <div style="flex:1;"><div style="font-weight:700;">Tokyo Sakura Glow Mood</div><div style="font-size:11px; color:var(--text-muted);">Moonlit Cherry Blossom & Rose Quartz</div></div>
+          <span class="genre-tag happy">Sakura</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Theme Dark Cyber Classic" onclick="closeModal('command-palette-modal'); setTheme('dark')">
+          <span style="font-size:20px;">🌙</span>
+          <div style="flex:1;"><div style="font-weight:700;">Dark Cyber Mood</div><div style="font-size:11px; color:var(--text-muted);">Classic Deep Space Violet & Cyan</div></div>
+          <span class="genre-tag sad">Dark</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Theme Clean Pro Light Studio" onclick="closeModal('command-palette-modal'); setTheme('light')">
+          <span style="font-size:20px;">☀️</span>
+          <div style="flex:1;"><div style="font-weight:700;">Clean Pro Light Mood</div><div style="font-size:11px; color:var(--text-muted);">Professional Studio Cloud Light</div></div>
+          <span class="genre-tag calm">Light</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Share Vault" onclick="closeModal('command-palette-modal'); openShareModal()">
+          <span style="font-size:20px;">🔗</span>
+          <div style="flex:1;"><div style="font-weight:700;">Share Vault / QR Code</div><div style="font-size:11px; color:var(--text-muted);">Generate sharing link & QR</div></div>
+          <span class="genre-tag sad">Action</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Recycle Bin Trash" onclick="closeModal('command-palette-modal'); switchView('trash', 'Recycle Bin / Trash')">
+          <span style="font-size:20px;">🗑️</span>
+          <div style="flex:1;"><div style="font-weight:700;">Recycle Bin</div><div style="font-size:11px; color:var(--text-muted);">View or restore deleted items</div></div>
+          <span class="genre-tag sad">View</span>
+        </div>
+        <div class="cmd-item" data-cmd-title="Logout" onclick="closeModal('command-palette-modal'); handleLogout()">
+          <span style="font-size:20px;">🚪</span>
+          <div style="flex:1;"><div style="font-weight:700; color:var(--status-danger);">Logout Securely</div><div style="font-size:11px; color:var(--text-muted);">End private cloud session</div></div>
+          <span class="genre-tag romantic">Auth</span>
+        </div>
+      </div>
+
+      <!-- Footer Keyboard Navigation Hints -->
+      <div style="margin-top:14px; padding-top:10px; border-top:1px solid var(--glass-border); font-size:11px; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; gap:12px;">
+          <span><kbd style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px;">↑</kbd> <kbd style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px;">↓</kbd> Navigate</span>
+          <span><kbd style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px;">Enter</kbd> Select</span>
+          <span><kbd style="background:rgba(255,255,255,0.08); padding:2px 6px; border-radius:4px;">Esc</kbd> Close</span>
+        </div>
+        <span style="color:var(--accent-cyan); font-weight:600;">Private Cloud v1.0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="edit-profile-modal" class="modal-overlay" onclick="if(event.target===this) closeModal('edit-profile-modal')">
+    <div class="modal-card" style="max-width:480px; width:95%; margin:auto; text-align:left;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid var(--glass-border); padding-bottom:10px;">
+        <h2 style="font-size:20px; font-weight:800; display:flex; align-items:center; gap:8px;">
+          <span>✏️</span> <span>Edit Personal Profile</span>
+        </h2>
+        <button class="btn-icon" onclick="closeModal('edit-profile-modal')" title="Close (Esc)">✖</button>
+      </div>
+
+      <form id="edit-profile-form" onsubmit="handleProfileEditSubmit(event)">
+        <!-- Custom Avatar Upload Quick Action -->
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:18px; background:rgba(255,255,255,0.04); padding:12px; border-radius:var(--radius-sm);">
+          <div id="edit-avatar-preview" style="font-size:40px; width:64px; height:64px; border-radius:50%; background:rgba(0,229,255,0.1); display:flex; align-items:center; justify-content:center; overflow:hidden; border:2px solid var(--accent-cyan);">👤</div>
+          <div>
+            <div style="font-size:13px; font-weight:700; color:#fff;">Profile Picture / Avatar</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">Upload your real photo or pick an avatar</div>
+            <button type="button" class="btn-primary-3d" style="font-size:11px; padding:5px 12px; width:auto;" onclick="document.getElementById('profile-avatar-file-input').click()">
+              📷 Upload Real Photo
+            </button>
+          </div>
+        </div>
+
+        <div class="input-group" style="margin-bottom:14px;">
+          <label style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px; display:block;">Display Name</label>
+          <input type="text" id="edit-displayname" class="input-field" placeholder="Enter your full name" required />
+        </div>
+
+        <div class="input-group" style="margin-bottom:14px;">
+          <label style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:6px; display:block;">Personal Bio / Status</label>
+          <textarea id="edit-bio" class="input-field" rows="3" placeholder="Tell the world about yourself..." style="resize:vertical;"></textarea>
+        </div>
+
+        <!-- Privacy & Permission Selector -->
+        <div class="input-group" style="margin-bottom:18px;">
+          <label style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:8px; display:block;">
+            🛡️ Account Permission & Privacy (গোপনীয়তা):
+          </label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <label class="privacy-option-card active" id="pop-public" onclick="selectPrivacyOption('PUBLIC')" style="cursor:pointer; display:block; padding:12px; border-radius:var(--radius-sm); border:1px solid var(--accent-cyan); background:rgba(0,229,255,0.08); transition:all 0.2s ease;">
+              <input type="radio" name="profile_privacy_opt" value="PUBLIC" id="rad-privacy-public" checked style="display:none;" />
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="font-size:18px;">🌐</span> <strong style="font-size:13px; color:#fff;">Public Profile</strong>
+              </div>
+              <p style="font-size:11px; color:var(--text-muted); margin:0; line-height:1.3;">Anyone can search and view your photos.</p>
+            </label>
+
+            <label class="privacy-option-card" id="pop-private" onclick="selectPrivacyOption('PRIVATE')" style="cursor:pointer; display:block; padding:12px; border-radius:var(--radius-sm); border:1px solid var(--glass-border); background:rgba(255,255,255,0.03); transition:all 0.2s ease;">
+              <input type="radio" name="profile_privacy_opt" value="PRIVATE" id="rad-privacy-private" style="display:none;" />
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span style="font-size:18px;">🔒</span> <strong style="font-size:13px; color:#ff9100;">Private Profile</strong>
+              </div>
+              <p style="font-size:11px; color:var(--text-muted); margin:0; line-height:1.3;">Only you & <strong>Soumya</strong> can view your memories.</p>
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" class="btn-primary-3d" style="background:rgba(255,255,255,0.1); width:auto; padding:10px 18px;" onclick="closeModal('edit-profile-modal')">Cancel</button>
+          <button type="submit" class="btn-primary-3d" style="width:auto; padding:10px 24px;">Save Changes ✨</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       INTERACTIVE AVATAR CROP & FIT MODAL
+       ========================================================================== -->
+  <div id="avatar-crop-modal" class="modal-overlay" onclick="if(event.target===this) closeAvatarCropper()">
+    <div class="admin-modal-card" style="max-width: 580px; width: 95%; margin: auto; text-align: left; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden;">
+      
+      <!-- Modal Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid var(--glass-border); padding-bottom:12px;">
+        <h2 style="font-size:20px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px; margin:0;">
+          <span>✂️</span> <span>Adjust & Fit Profile Photo</span>
+        </h2>
+        <button class="btn-icon" onclick="closeAvatarCropper()" title="Cancel">✖</button>
+      </div>
+
+      <p style="font-size:12px; color:var(--text-secondary); margin:0 0 12px 0;">
+        Drag to position your photo, use the slider to zoom, or rotate to fit your profile circle perfectly.
+      </p>
+
+      <!-- Main Cropper Viewport -->
+      <div class="cropper-viewport-container" id="cropper-viewport-wrap">
+        <canvas id="cropper-canvas"></canvas>
+        <div class="cropper-circular-mask" id="cropper-mask"></div>
+      </div>
+
+      <!-- Controls Toolbar -->
+      <div class="cropper-toolbar">
+        <div class="cropper-zoom-row">
+          <button type="button" class="btn-icon-small" onclick="adjustCropperZoom(-0.1)" title="Zoom Out">➖</button>
+          <input type="range" id="cropper-zoom-slider" min="0.2" max="3.5" step="0.01" value="1" oninput="onCropperZoomChange(this.value)">
+          <button type="button" class="btn-icon-small" onclick="adjustCropperZoom(0.1)" title="Zoom In">➕</button>
+          <span id="cropper-zoom-val" style="font-size:12px; font-weight:700; color:var(--accent-cyan); min-width:45px; text-align:right;">100%</span>
+        </div>
+
+        <div style="display:flex; gap:8px; align-items:center; justify-content:space-between; width:100%; margin-top:8px;">
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn-primary-3d" style="background:rgba(255,255,255,0.08); font-size:11px; padding:6px 10px;" onclick="rotateCropper(-90)" title="Rotate Left">
+              ↺ -90°
+            </button>
+            <button type="button" class="btn-primary-3d" style="background:rgba(255,255,255,0.08); font-size:11px; padding:6px 10px;" onclick="rotateCropper(90)" title="Rotate Right">
+              ↻ +90°
+            </button>
+            <button type="button" class="btn-primary-3d" style="background:rgba(255,255,255,0.08); font-size:11px; padding:6px 10px;" onclick="resetCropperTransform()" title="Reset Fit">
+              🔄 Reset
+            </button>
+          </div>
+
+          <!-- Mini Live Preview -->
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:11px; color:var(--text-muted);">Preview:</span>
+            <div id="cropper-mini-preview" style="width:38px; height:38px; border-radius:50%; border:2px solid var(--accent-cyan); overflow:hidden; background:#000; box-shadow:0 0 10px rgba(0,229,255,0.3);">
+              <canvas id="cropper-preview-canvas" width="76" height="76" style="width:100%; height:100%; object-fit:cover;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:14px; border-top:1px solid var(--glass-border); padding-top:12px;">
+        <button type="button" class="btn-primary-3d" style="background:rgba(255,255,255,0.1); width:auto; padding:10px 18px;" onclick="closeAvatarCropper()">
+          Cancel
+        </button>
+        <button type="button" id="save-cropper-avatar-btn" class="btn-primary-3d" style="width:auto; padding:10px 24px;" onclick="applyAndUploadCroppedAvatar()">
+          ✨ Save Profile Picture
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       SECTION 10: ADMIN SUPPORT & HELP DESK MODAL
+       ========================================================================== -->
+  <div id="support-help-modal" class="modal-overlay" style="display:none;" onclick="if(event.target === this) closeSupportModal()">
+    <div class="modal-card glass-panel support-modal-card">
+      
+      <!-- Modal Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid var(--glass-border); padding-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:38px; height:38px; border-radius:12px; background:var(--accent-gradient); display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 18px rgba(124,77,255,0.45); animation:pulse 3s infinite;">
+            🎧
+          </div>
+          <div>
+            <h3 style="font-size:17px; font-weight:800; color:#ffffff; margin:0; letter-spacing:0.5px;">Admin Help Desk</h3>
+            <p style="font-size:11px; color:var(--accent-cyan); margin:2px 0 0 0;">Direct Support & Issue Resolution</p>
+          </div>
+        </div>
+        <button type="button" class="btn-icon" style="width:32px; height:32px; font-size:12px;" onclick="closeSupportModal()">✕</button>
+      </div>
+
+      <p style="font-size:12px; color:var(--text-secondary); line-height:1.5; margin-bottom:16px;">
+        Encountering a bug or have a question? Describe your issue below and attach a photo if needed. Your ticket will be dispatched immediately to the Head Admin.
+      </p>
+
+      <!-- Support Form -->
+      <form id="support-ticket-form" onsubmit="handleSupportSubmit(event)">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+          <div class="input-group" style="margin-bottom:0;">
+            <label for="support-name" style="font-size:11px; font-weight:700; color:var(--accent-cyan); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; display:block;">👤 Your Name</label>
+            <input type="text" id="support-name" class="support-glass-input" placeholder="Enter your name" required />
+          </div>
+          <div class="input-group" style="margin-bottom:0;">
+            <label for="support-contact" style="font-size:11px; font-weight:700; color:var(--accent-purple); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; display:block;">📱 Contact (Email / Phone)</label>
+            <input type="text" id="support-contact" class="support-glass-input" placeholder="For reply (optional)" />
+          </div>
+        </div>
+
+        <div class="input-group" style="margin-bottom:14px;">
+          <label for="support-category" style="font-size:11px; font-weight:700; color:var(--accent-cyan); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; display:block;">📂 Topic / Issue Category</label>
+          <select id="support-category" class="support-glass-select">
+            <option value="Photo Upload Issue" style="background:#0c0e18;">📸 Photo Upload Issue</option>
+            <option value="Photo Fit / Crop Problem" style="background:#0c0e18;">🖼️ Photo Fit / Crop Problem</option>
+            <option value="Music Vault Playback" style="background:#0c0e18;">🎵 Music Vault Playback</option>
+            <option value="Account / Profile Help" style="background:#0c0e18;">👤 Account / Profile Help</option>
+            <option value="Bug / Error Report" style="background:#0c0e18;">🐛 Bug / Error Report</option>
+            <option value="Feature Suggestion" style="background:#0c0e18;">💡 Feature Suggestion</option>
+            <option value="General Query" style="background:#0c0e18;">❓ General Query</option>
+          </select>
+        </div>
+
+        <div class="input-group" style="margin-bottom:14px;">
+          <label for="support-subject" style="font-size:11px; font-weight:700; color:var(--accent-cyan); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; display:block;">📝 Subject</label>
+          <input type="text" id="support-subject" class="support-glass-input" placeholder="Brief summary of what happened" required />
+        </div>
+
+        <div class="input-group" style="margin-bottom:14px;">
+          <label for="support-message" style="font-size:11px; font-weight:700; color:var(--accent-cyan); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; display:block;">💬 Detailed Issue Description</label>
+          <textarea id="support-message" class="support-glass-textarea" rows="3" placeholder="Explain the problem in detail..." required></textarea>
+        </div>
+
+        <!-- Issue Screenshot / Photo Attachment Dropzone -->
+        <div class="input-group" style="margin-bottom:16px;">
+          <label style="font-size:11px; font-weight:700; color:var(--accent-cyan); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+            <span>📸 Attach Issue Screenshot (Optional)</span>
+            <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">JPG, PNG, WebP (or paste Ctrl+V)</span>
+          </label>
+          
+          <input type="file" id="support-screenshot-file" accept="image/*" style="display:none;" onchange="handleSupportScreenshotSelect(event)" />
+          
+          <div id="support-dropzone" class="support-screenshot-dropzone" onclick="document.getElementById('support-screenshot-file').click()">
+            <div style="font-size:22px; margin-bottom:4px;">📷</div>
+            <div style="font-size:12px; font-weight:700; color:var(--accent-cyan);">Click to Choose Photo or Drag & Drop Here</div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">You can also take a screenshot and paste (Ctrl+V) directly</div>
+          </div>
+
+          <!-- Attachment Live Preview Box -->
+          <div id="support-screenshot-preview" class="support-preview-wrap" style="display:none;">
+            <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
+              <img id="support-preview-img" src="" alt="Screenshot" style="width:40px; height:40px; border-radius:6px; object-fit:cover; border:1px solid var(--accent-cyan);" />
+              <div style="overflow:hidden;">
+                <div id="support-preview-filename" style="font-size:12px; font-weight:700; color:#fff; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:260px;">screenshot.png</div>
+                <div id="support-preview-size" style="font-size:10px; color:var(--accent-cyan);">0 KB</div>
+              </div>
+            </div>
+            <button type="button" class="btn-icon" style="width:28px; height:28px; font-size:12px; color:var(--status-danger);" onclick="removeSupportScreenshot()" title="Remove Screenshot">✕</button>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid var(--glass-border); padding-top:14px;">
+          <button type="button" class="btn-primary-3d" style="background:rgba(255,255,255,0.08); width:auto; padding:9px 18px; font-size:13px;" onclick="closeSupportModal()">
+            Cancel
+          </button>
+          <button type="submit" id="support-submit-btn" class="btn-primary-3d" style="width:auto; padding:9px 24px; font-size:13px; box-shadow:0 8px 25px rgba(0,229,255,0.35);">
+            🚀 Send Message to Admin
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Floating AI Cloud Assistant Launcher -->
+  <button id="ai-chat-launcher" class="ai-chat-launcher" onclick="toggleChatbot()" title="Ask Cloud AI Assistant">
+    <div class="ai-launcher-pulse"></div>
+    <div class="ai-launcher-icon">🤖</div>
+    <span class="ai-launcher-badge">Cloud AI</span>
+  </button>
+
+  <!-- AI Cloud Assistant Chat Window -->
+  <div id="ai-chat-window" class="ai-chat-window">
+    <!-- Chat Header -->
+    <div class="ai-chat-header">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="ai-header-avatar">🤖</div>
+        <div>
+          <div style="font-weight:800; font-size:14px; color:#fff; display:flex; align-items:center; gap:6px;">
+            <span>Cloud AI Assistant</span>
+            <span class="ai-online-indicator"></span>
+          </div>
+          <div style="font-size:11px; color:var(--accent-cyan);">Instant Website Guide & Helper</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <button type="button" class="ai-btn-header" onclick="clearChatHistory()" title="Clear Chat">🧹</button>
+        <button type="button" class="ai-btn-header" onclick="closeChatbot()" title="Close">✕</button>
+      </div>
+    </div>
+
+    <!-- Quick Suggestion Chips -->
+    <div class="ai-suggestions-container" id="ai-suggestions-container">
+      <button type="button" class="ai-suggestion-chip" onclick="askAiQuestion('I need help or want to contact admin')">🎧 Contact Admin</button>
+      <button type="button" class="ai-suggestion-chip" onclick="askAiQuestion('How do I upload and fit my profile photo?')">📸 Fit Profile Photo</button>
+      <button type="button" class="ai-suggestion-chip" onclick="askAiQuestion('Tell me about Music Vault')">🎵 Music Vault</button>
+      <button type="button" class="ai-suggestion-chip" onclick="askAiQuestion('How does the Profile Hub work?')">👤 Profile Hub</button>
+      <button type="button" class="ai-suggestion-chip" onclick="askAiQuestion('Who is Head Admin & VIP?')">👑 Admin & VIP</button>
+      <button type="button" class="ai-suggestion-chip" onclick="askAiQuestion('How do I upload photos?')">➕ Upload Guide</button>
+    </div>
+
+    <!-- Chat Messages Scroll Container -->
+    <div class="ai-messages-body" id="ai-messages-body">
+      <!-- Default Welcome Message -->
+      <div class="ai-msg-row bot">
+        <div class="ai-msg-avatar">🤖</div>
+        <div class="ai-msg-bubble">
+          <p>Hello! I am your <strong>Private Cloud AI Assistant</strong>. ✨</p>
+          <p style="margin-top:6px;">Ask me anything about photo uploads, cropping, music vault, personal profiles, or security!</p>
+          <div class="ai-quick-actions">
+            <button type="button" class="ai-action-btn" onclick="executeAiAction('open_upload')">➕ Upload Photo</button>
+            <button type="button" class="ai-action-btn" onclick="executeAiAction('open_music')">🎵 Music Vault</button>
+            <button type="button" class="ai-action-btn" onclick="executeAiAction('open_support')">🎧 Contact Admin</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Input Box -->
+    <form id="ai-chat-form" class="ai-chat-input-row" onsubmit="handleAiChatSubmit(event)">
+      <input type="text" id="ai-chat-input" placeholder="Ask a question (English or any language)..." autocomplete="off" />
+      <button type="submit" id="ai-chat-send-btn" title="Send Question">
+        <span>➤</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: DIRECT PROFILE MESSENGER (WITH INBOX DIRECTORY & 1-ON-1 CHAT)
+       ========================================================================== -->
+  <div id="profile-messenger-modal" class="modal-overlay" style="z-index:99999;" onclick="if(event.target===this) closeProfileMessenger()">
+    <div class="messenger-container" onclick="event.stopPropagation()">
+      
+      <!-- ==================== VIEW 1: INBOX & MEMBERS DIRECTORY ==================== -->
+      <div id="pm-inbox-view" class="messenger-view-container" style="display:flex; flex-direction:column; height:100%;">
+        <!-- Inbox Header -->
+        <div class="messenger-header">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="messenger-inbox-icon">💬</div>
+            <div>
+              <div style="font-weight:800; font-size:16px; color:#fff;">Messages & Members</div>
+              <div style="font-size:11px; color:var(--accent-cyan);">⏳ 24h Auto-Clean & Encrypted</div>
+            </div>
+          </div>
+          <button type="button" class="btn-icon" onclick="closeProfileMessenger()" title="Close Messenger">✕</button>
+        </div>
+
+        <!-- Search Bar Inside Messenger -->
+        <div class="messenger-search-bar">
+          <span style="font-size:13px; opacity:0.8;">🔍</span>
+          <input type="text" id="pm-user-search-input" placeholder="Search registered members..." oninput="handleMessengerUserSearch(event)" autocomplete="off" />
+          <button type="button" id="pm-search-clear-btn" style="display:none; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:11px;" onclick="clearMessengerSearch()">✖</button>
+        </div>
+
+        <!-- Registered Members & Conversations Scroll List -->
+        <div id="pm-inbox-list" class="messenger-inbox-body">
+          <div style="text-align:center; padding:30px; color:var(--text-muted);">Loading member chats...</div>
+        </div>
+      </div>
+
+      <!-- ==================== VIEW 2: 1-ON-1 CHAT ROOM ==================== -->
+      <div id="pm-chat-view" class="messenger-view-container" style="display:none; flex-direction:column; height:100%;">
+        <!-- Chat Room Header -->
+        <div class="messenger-header">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button type="button" class="btn-icon messenger-back-btn" onclick="showMessengerInbox()" title="Back to All Chats">
+              <span>←</span>
+            </button>
+            <div id="pm-header-avatar" class="messenger-avatar">👤</div>
+            <div>
+              <div id="pm-header-name" style="font-weight:800; font-size:14px; color:#fff;">@username</div>
+              <div id="pm-header-status" style="font-size:11px; color:var(--accent-cyan); display:flex; align-items:center; gap:4px;">
+                <span class="ai-online-indicator"></span> <span id="pm-online-text">Active on Cloud</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calling & Close Buttons -->
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button type="button" class="btn-icon messenger-call-btn voice" onclick="startVoiceCall(activeChatUsername)" title="📞 Voice Call">
+              <span>📞</span>
+            </button>
+            <button type="button" class="btn-icon messenger-call-btn video" onclick="startVideoCall(activeChatUsername)" title="📹 Video Call">
+              <span>📹</span>
+            </button>
+            <button type="button" class="btn-icon" onclick="closeProfileMessenger()" title="Close Messenger">✕</button>
+          </div>
+        </div>
+
+        <!-- 24-Hour Ephemeral Notice Badge -->
+        <div class="messenger-ephemeral-banner">
+          <span>⏳ Messages disappear after 24 hours to keep your private cloud clean!</span>
+        </div>
+
+        <!-- Messages Stream -->
+        <div id="pm-messages-list" class="messenger-messages-body">
+          <!-- Messages rendered dynamically -->
+        </div>
+
+        <!-- Private Profile Request Notice (If unapproved) -->
+        <div id="pm-restricted-banner" class="messenger-restricted-banner" style="display:none;">
+          <div style="font-size:24px; margin-bottom:6px;">🔒</div>
+          <div style="font-weight:700; color:#fff; font-size:13px;">This account is private</div>
+          <p style="font-size:11px; color:var(--text-secondary); margin:4px 0 10px;">You need to send a request first. When <span id="pm-restricted-name"></span> accepts, chatting will unlock!</p>
+          <button type="button" id="pm-send-request-btn" class="btn-primary-3d" style="font-size:12px; padding:7px 16px;" onclick="sendDirectChatRequest(activeChatUsername)">
+            ✉️ Send Message Request
+          </button>
+        </div>
+
+        <!-- Message Input Row -->
+        <form id="pm-chat-form" class="messenger-input-row" onsubmit="handleDirectMessageSubmit(event)">
+          <div class="messenger-emoji-bar">
+            <span onclick="appendMessengerEmoji('❤️')">❤️</span>
+            <span onclick="appendMessengerEmoji('🔥')">🔥</span>
+            <span onclick="appendMessengerEmoji('😍')">😍</span>
+            <span onclick="appendMessengerEmoji('✨')">✨</span>
+            <span onclick="appendMessengerEmoji('👏')">👏</span>
+            <span onclick="appendMessengerEmoji('🎉')">🎉</span>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="text" id="pm-chat-input" class="messenger-input" placeholder="Type a message..." autocomplete="off" />
+            <button type="submit" id="pm-chat-send-btn" class="messenger-send-btn" title="Send Message">
+              <span>➤</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: CALLING OVERLAY (VOICE & VIDEO CALL SCREEN)
+       ========================================================================== -->
+  <div id="calling-modal" class="modal-overlay" style="z-index:9500;" onclick="if(event.target===this) endCurrentCall()">
+    <div class="modal-card calling-container" onclick="event.stopPropagation()">
+      <div class="call-particles-bg"></div>
+
+      <!-- Calling Top Header -->
+      <div class="call-top-bar">
+        <span id="call-type-badge" class="call-pill">📞 Secure Cloud Voice Call</span>
+        <span id="call-timer" class="call-timer-text">00:00</span>
+      </div>
+
+      <!-- Video Preview Screen (Active during Video Calls) -->
+      <div id="call-video-container" class="call-video-container" style="display:none;">
+        <video id="call-video-element" autoplay playsinline muted></video>
+        <div class="call-remote-tag" id="call-remote-name">📹 Live Video Stream</div>
+      </div>
+
+      <!-- Audio Avatar & Pulsing Wave (Active during Voice Calls) -->
+      <div id="call-avatar-container" class="call-avatar-container">
+        <div class="call-wave wave-1"></div>
+        <div class="call-wave wave-2"></div>
+        <div class="call-wave wave-3"></div>
+        <div id="call-user-avatar" class="call-avatar-circle">👤</div>
+      </div>
+
+      <div class="call-info-wrap">
+        <h2 id="call-user-name" style="font-size:24px; font-weight:800; color:#fff; margin-bottom:4px;">Soumya</h2>
+        <p id="call-status-text" style="font-size:13px; color:var(--accent-cyan); animation:pulseGlow 2s infinite;">Ringing...</p>
+      </div>
+
+      <!-- Interactive Call Action Buttons -->
+      <div class="call-controls-row">
+        <button type="button" id="call-mute-btn" class="call-control-btn" onclick="toggleCallMute()" title="Mute Microphone">
+          <span id="call-mute-icon">🎤</span>
+          <span class="call-btn-lbl">Mute</span>
+        </button>
+        <button type="button" id="call-video-toggle-btn" class="call-control-btn" onclick="toggleCallVideo()" title="Toggle Camera">
+          <span id="call-video-icon">📹</span>
+          <span class="call-btn-lbl">Camera</span>
+        </button>
+        <button type="button" id="call-speaker-btn" class="call-control-btn" onclick="toggleCallSpeaker()" title="Speaker">
+          <span id="call-speaker-icon">🔊</span>
+          <span class="call-btn-lbl">Speaker</span>
+        </button>
+        <button type="button" class="call-control-btn end-call" onclick="endCurrentCall()" title="End Call">
+          <span>❌</span>
+          <span class="call-btn-lbl">End</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: INCOMING CALL RINGING OVERLAY (ACCEPTS & DECLINES CALLS)
+       ========================================================================== -->
+  <div id="incoming-call-modal" class="modal-overlay" style="z-index:9600;" onclick="event.stopPropagation()">
+    <div class="modal-card incoming-call-card" onclick="event.stopPropagation()">
+      <!-- Ringing Pulsing Rings -->
+      <div class="incoming-ring-circle ring-1"></div>
+      <div class="incoming-ring-circle ring-2"></div>
+      <div class="incoming-ring-circle ring-3"></div>
+
+      <!-- Caller Avatar -->
+      <div id="incoming-caller-avatar" class="incoming-avatar-circle">👑</div>
+
+      <!-- Caller Details -->
+      <div class="incoming-caller-info">
+        <h2 id="incoming-caller-name" class="incoming-caller-title">Soumya ✨</h2>
+        <p id="incoming-call-type-badge" class="incoming-call-badge">📹 Incoming Ultra HD Video Call...</p>
+        <span class="incoming-ringing-text">🔔 Ringing...</span>
+      </div>
+
+      <!-- Accept / Decline Action Buttons -->
+      <div class="incoming-actions-row">
+        <button type="button" class="btn-call-action btn-decline" onclick="declineIncomingCall()" title="Decline Call">
+          <span class="btn-call-icon">❌</span>
+          <span class="btn-call-lbl">Decline</span>
+        </button>
+        <button type="button" class="btn-call-action btn-accept" onclick="acceptIncomingCall()" title="Accept Call">
+          <span class="btn-call-icon">📞</span>
+          <span class="btn-call-lbl">Accept</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: INTERACTIVE BIRTHDAY CAKE, CANDLE & CELEBRATION
+       ========================================================================== -->
+  <div id="birthday-celebration-modal" class="modal-overlay" style="z-index:9800;" onclick="if(event.target===this) closeBirthdayCelebration()">
+    <canvas id="birthday-confetti-canvas" class="birthday-confetti-canvas"></canvas>
+    <div id="birthday-balloons-container" class="birthday-balloons-container"></div>
+
+    <div class="modal-card birthday-card-container" onclick="event.stopPropagation()">
+      <!-- Interactive Cake Stage -->
+      <div id="bday-cake-stage" class="bday-cake-stage">
+        <!-- Interactive Lit Candle -->
+        <div id="bday-candle-wrap" class="bday-candle-wrap" onclick="blowOutBirthdayCandle()" title="💨 Click or blow to extinguish the candle!">
+          <div class="bday-flame-glow" id="bday-flame-glow"></div>
+          <div class="bday-flame" id="bday-flame"></div>
+          <div class="bday-smoke" id="bday-smoke"></div>
+          <div class="bday-candle-stick"></div>
+        </div>
+
+        <!-- 3D Layered Cake -->
+        <div class="bday-cake-body">
+          <div class="cake-tier cake-tier-top">
+            <div class="cake-cherries">🍒 🍓 🍒</div>
+          </div>
+          <div class="cake-tier cake-tier-mid"></div>
+          <div class="cake-tier cake-tier-base">
+            <div class="cake-plate"></div>
+          </div>
+        </div>
+
+        <div id="bday-cake-prompt" class="bday-cake-prompt">
+          <div class="cake-prompt-badge">🎂 Make a wish & Blow the candle! 💨</div>
+          <div class="cake-prompt-sub">Click the candle flame to blow out (Auto in <span id="bday-timer-val">5</span>s)</div>
+        </div>
+      </div>
+
+      <!-- Grand Wish Greeting (Animates in upon extinguishing) -->
+      <div id="bday-wish-reveal" class="bday-wish-reveal" style="display:none;">
+        <div class="birthday-sparkles-row">✨ 🎉 🎈 🌟 💖 🎊 ✨</div>
+        <h1 id="birthday-greet-title" class="birthday-title">HAPPY BIRTHDAY!</h1>
+        <h3 id="birthday-greet-name" class="birthday-subtitle">Soumya ✨</h3>
+        <p id="birthday-greet-message" class="birthday-message">
+          Wishing you a magnificent birthday filled with joy, laughter, good health, and countless beautiful memories in your Private Photo Cloud! 💖🎂🎉
+        </p>
+        <div class="birthday-actions-row">
+          <button type="button" class="btn-primary-3d" style="background:linear-gradient(135deg, #ff007f, #ffd700); color:#000; font-weight:800; padding:12px 32px; font-size:14px; box-shadow:0 8px 30px rgba(255,0,127,0.5);" onclick="closeBirthdayCelebration()">
+            🎉 Thank You So Much! 💖
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: CHANGE PHONE NUMBER WITH PASSWORD VERIFICATION
+       ========================================================================== -->
+  <div id="change-phone-modal" class="modal-overlay" style="z-index:9200;" onclick="if(event.target===this) closeChangePhoneModal()">
+    <div class="modal-card auth-modal" style="max-width:440px;" onclick="event.stopPropagation()">
+      <div style="text-align:center; margin-bottom:18px;">
+        <div style="font-size:36px; margin-bottom:6px;">📱</div>
+        <h3 style="font-size:18px; font-weight:800; color:#fff;">Update Mobile Number</h3>
+        <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">Enter your new 10-digit number and account password to confirm.</p>
+      </div>
+
+      <form id="change-phone-form" onsubmit="handleChangePhoneNumber(event)">
+        <div class="input-group">
+          <label for="cp-new-phone"><span>📱</span> <span>New Mobile Number (10 Digits)</span></label>
+          <div class="input-wrapper">
+            <input type="tel" id="cp-new-phone" class="auth-glass-input" placeholder="e.g. 9876543210" maxlength="10" required>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="cp-password"><span>🔒</span> <span>Current Account Password</span></label>
+          <div class="input-wrapper">
+            <input type="password" id="cp-password" class="auth-glass-input" placeholder="Enter your current password" required autocomplete="current-password">
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:18px;">
+          <button type="button" class="btn-primary-3d" style="background:rgba(255,255,255,0.08); width:auto; padding:8px 16px;" onclick="closeChangePhoneModal()">Cancel</button>
+          <button type="submit" id="cp-submit-btn" class="btn-primary-3d" style="width:auto; padding:8px 22px;">💾 Save Number</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: PENDING MESSAGE & FOLLOW REQUESTS
+       ========================================================================== -->
+  <div id="pending-requests-modal" class="modal-overlay" style="z-index:9100;" onclick="if(event.target===this) closeModal('pending-requests-modal')">
+    <div class="modal-card" style="max-width:480px;" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="font-size:16px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+          <span>💌</span> <span>Pending Requests</span>
+        </h3>
+        <button type="button" class="btn-icon" onclick="closeModal('pending-requests-modal')">✕</button>
+      </div>
+
+      <div id="pending-requests-list" style="display:flex; flex-direction:column; gap:10px; max-height:360px; overflow-y:auto;">
+        <!-- Dynamically rendered -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Scripts -->
+  <script src="./js/three-scene.js"></script>
+  <script src="./js/gsap-animations.js"></script>
+  <script src="./js/pradhanGuide.js"></script>
+  <script src="./js/favoriteMemoryEffects.js"></script>
+  <script src="./js/app.js"></script>
+  <script src="./js/pwa-install.js"></script>
+</body>
+</html>

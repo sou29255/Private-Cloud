@@ -1,0 +1,102 @@
+[
+  {
+    "id": "msg_1787300783564_3fjvu",
+    "sender": "Soumya",
+    "receiver": "Sumana",
+    "text": "Hello Sumana! Sending love and warm wishes! 💖✨",
+    "type": "text",
+    "mediaUrl": "",
+    "timestamp": "2026-08-21T08:26:23.564Z",
+    "read": true
+  },
+  {
+    "id": "msg_1787302762277_q5hf5",
+    "sender": "Soumya",
+    "receiver": "Sumana",
+    "text": "hi",
+    "type": "text",
+    "mediaUrl": "",
+    "timestamp": "2026-08-21T08:59:22.277Z",
+    "read": true
+  },
+  {
+    "id": "msg_1787303420899_2bu5n",
+    "sender": "Soumya",
+    "receiver": "Sumana",
+    "text": "Hello Sumana! Welcome to our 24h clean messenger! ✨",
+    "type": "text",
+    "mediaUrl": "",
+    "timestamp": "2026-08-21T09:10:20.899Z",
+    "read": true
+  },
+  {
+    "id": "msg_1787303603354_aj6wh",
+    "sender": "Soumya",
+    "receiver": "Sumana",
+    "text": "hello sona",
+    "type": "text",
+    "mediaUrl": "",
+    "timestamp": "2026-08-21T09:13:23.354Z",
+    "read": true
+  },
+  {
+    "id": "msg_1787320225278_vaqz5",
+    "sender": "Sumana",
+    "receiver": "Soumya",
+    "text": "oo my baby.I miss you very long timr",
+    "type": "text",
+    "mediaUrl": "",
+    "timestamp": "2026-08-21T13:50:25.278Z",
+    "read": true
+  },
+  {
+    "id": "msg_1787321181531_go3ff",
+    "sender": "Soumya",
+    "receiver": "Sumana",
+    "text": "Hello Sumana! Testing our secure message box. 💖",
+    "type": "text",
+    "mediaUrl": "",
+    "timestamp": "2026-08-21T14:06:21.531Z",
+    "read": true
+  },
+  {
+    "id": "msg_1787321181593_uy744",
+    "sender": "Soumya",
+    "receiver": "Sumana",
+    "text": "📞 Voice Call (1m 15s)",
+    "type": "call_log",
+    "mediaUrl": "voice",
+    "timestamp": "2026-08-21T14:06:21.593Z",
+    "read": true
+  },
+  {
+    "id": "msg_1787321181601_fzv84",
+    "sender": "Soumya",
+    "receiver": "Sumana",
+    "text": "⚠️ Missed Video Call",
+    "type": "call_missed",
+    "mediaUrl": "video",
+    "timestamp": "2026-08-21T14:06:21.601Z",
+    "read": true
+  },
+  {
+    "id": "msg_1787334351338_t111n",
+    "sender": "Soumya",
+    "receiver": "Sumana",
+    "text": "valo kora dakbi website ta onak ke6 aacha. amme kono bolbo na aakhon tui sob nija thaka dak🔥❤️",
+    "type": "text",
+    "mediaUrl": "",
+    "timestamp": "2026-08-21T17:45:51.338Z",
+    "read": true
+  },
+  {
+    "id": "msg_1787347167895_cr8jy",
+    "sender": "Sumana",
+    "receiver": "Soumya",
+    "text": "ok sir ji",
+    "type": "text",
+    "mediaUrl": "",
+    "timestamp": "2026-08-21T21:19:27.895Z",
+    "read": false
+  }
+]

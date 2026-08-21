@@ -1,0 +1,1033 @@
+/* ==========================================================================
+   MOBILE & TABLET ONLY RESPONSIVE OPTIMIZATION
+   STRICT DESKTOP IMMUNITY: ALL RULES ARE SCOPED UNDER MEDIA QUERIES ONLY
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. TABLET SCREENS (768px - 991px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 991px) {
+  :root {
+    --sidebar-width: 0px;
+    --mobile-nav-height: 62px;
+  }
+
+  /* Global Container Protection (Zero Overflow Without Breaking Sticky) */
+  html, body, #app-view, .main-wrapper, .content-body {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: clip !important;
+  }
+
+  .main-wrapper {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  .content-body {
+    padding: 16px 14px !important;
+    padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 65px) !important;
+  }
+
+  /* Off-Canvas Sidebar */
+  #sidebar-toggle-btn {
+    display: flex !important;
+  }
+
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 280px !important;
+    transform: translateX(-100%) !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: 3000 !important;
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.9) !important;
+    background: #0c0e18 !important;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease !important;
+  }
+
+  .sidebar.open {
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  /* Gallery Grid on Tablet */
+  .gallery-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  /* Topbar on Tablet (Permanently Fixed/Sticky at Top) */
+  .topbar {
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 2200 !important;
+    padding: 0 16px !important;
+    gap: 10px !important;
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45) !important;
+  }
+
+  /* Mobile Bottom Navigation Bar on Tablet/Mobile (Permanently Fixed at Bottom) */
+  .mobile-bottom-nav {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 2400 !important;
+    background: rgba(10, 14, 26, 0.96) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    border-top: 1px solid var(--glass-border) !important;
+    box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.5) !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+  }
+
+  .search-box {
+    flex: 1 1 auto !important;
+    max-width: 240px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. MOBILE PHONES (max-width: 768px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  :root {
+    --topbar-height: 56px;
+    --mobile-nav-height: 60px;
+    --font-hero: 20px;
+    --font-h2: 17px;
+    --font-body: 12px;
+  }
+
+  /* Zero Horizontal Overflow Without Breaking Sticky Positioning */
+  html, body, #app-view, .main-wrapper, .content-body {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: clip !important;
+    box-sizing: border-box !important;
+  }
+
+  .content-body {
+    padding: 10px 8px !important;
+    padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 75px) !important;
+  }
+
+  /* Topbar Mobile Layout (Permanently Fixed/Sticky & Swipeable Track) */
+  .topbar {
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 2200 !important;
+    height: var(--topbar-height) !important;
+    padding: 0 8px !important;
+    gap: 8px !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45) !important;
+    overflow: visible !important;
+  }
+
+  .topbar-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+    min-width: 0 !important;
+  }
+
+  #sidebar-toggle-btn {
+    display: flex !important;
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 16px !important;
+    flex-shrink: 0 !important;
+    border-radius: 10px !important;
+  }
+
+  .search-box {
+    width: 100px !important;
+    flex-shrink: 0 !important;
+    height: 34px !important;
+    padding: 0 10px !important;
+    border-radius: 18px !important;
+  }
+
+  .search-box input {
+    font-size: 12px !important;
+  }
+
+  /* Silky Smooth Horizontal Sliding Track for Topbar Actions */
+  .topbar-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    padding: 4px 6px !important;
+    flex-wrap: nowrap !important;
+    scroll-snap-type: x proximity !important;
+    scroll-behavior: smooth !important;
+    touch-action: pan-x !important;
+  }
+
+  .topbar-actions::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* User Profile Badge in Sliding Track */
+  .user-profile-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 5px 12px !important;
+    font-size: 12px !important;
+    border-radius: 20px !important;
+    flex-shrink: 0 !important;
+    max-width: none !important;
+    white-space: nowrap !important;
+    scroll-snap-align: start !important;
+  }
+
+  #topbar-user-name {
+    display: inline !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+  }
+
+  /* Action Buttons in Sliding Track (Full Labels & Non-Overlapping) */
+  #topbar-requests-btn,
+  #topbar-messenger-btn,
+  #topbar-pradhan-btn,
+  .btn-upload {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 6px 13px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    height: 34px !important;
+    border-radius: 20px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    scroll-snap-align: start !important;
+  }
+
+  /* Head Admin Button strictly visible ONLY for Soumya */
+  body.user-is-soumya #topbar-admin-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 6px 13px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    height: 34px !important;
+    border-radius: 20px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    scroll-snap-align: start !important;
+  }
+  body:not(.user-is-soumya) #topbar-admin-btn,
+  body:not(.user-is-soumya) #nav-head-admin {
+    display: none !important;
+  }
+
+  #topbar-admin-btn span:nth-child(2),
+  .btn-upload span:nth-child(2) {
+    display: inline !important;
+  }
+
+  /* Music and Command buttons in Sliding Topbar on Mobile */
+  #topbar-music-btn,
+  #topbar-command-btn,
+  #theme-toggle-btn,
+  .btn-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 15px !important;
+    flex-shrink: 0 !important;
+    border-radius: 50% !important;
+    scroll-snap-align: start !important;
+  }
+
+  /* Hide Desktop-Only Badges from Phone Topbar */
+  #network-badge,
+  #pwa-install-btn {
+    display: none !important;
+  }
+
+  /* Hero 3D Section on Mobile */
+  .hero-3d-section {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 16px 12px !important;
+    margin-bottom: 12px !important;
+    gap: 12px !important;
+    min-height: auto !important;
+    border-radius: var(--radius-md) !important;
+    box-sizing: border-box !important;
+  }
+
+  .hero-content {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .hero-greeting-pill {
+    font-size: 11px !important;
+    padding: 3px 10px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .hero-content h1 {
+    font-size: 19px !important;
+    letter-spacing: 0.3px !important;
+    line-height: 1.25 !important;
+  }
+
+  .hero-content p {
+    font-size: 11px !important;
+    margin: 5px 0 10px 0 !important;
+  }
+
+  .hero-action-buttons {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    width: 100% !important;
+    gap: 6px !important;
+  }
+
+  .btn-hero-action {
+    padding: 7px 8px !important;
+    font-size: 11px !important;
+    justify-content: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 3 Equal Quick Action Cards on Mobile ("গুড নাইট সুমনা" 3-Column Equal Grid) */
+  .hero-cards-floating {
+    position: relative !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-top: 10px !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    perspective: none !important;
+  }
+
+  .floating-card-3d {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 86px !important;
+    flex-shrink: 1 !important;
+    border-radius: 14px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--glass-border) !important;
+    backdrop-filter: blur(16px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 10px 4px !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35) !important;
+    cursor: pointer !important;
+    touch-action: manipulation !important;
+  }
+
+  .quick-card-inner {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    width: 100% !important;
+  }
+
+  .quick-card-icon {
+    font-size: 22px !important;
+    display: inline-block !important;
+    margin-bottom: 2px !important;
+  }
+
+  .quick-card-title {
+    font-size: 11.5px !important;
+    font-weight: 800 !important;
+    color: #fff !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+  }
+
+  .quick-card-subtitle {
+    font-size: 9.5px !important;
+    color: var(--accent-cyan) !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+  }
+
+  /* Ambient Floating & Glowing Animations for Mobile Quick Cards */
+  .floating-card-3d:nth-child(1) {
+    animation: mobileCardFloat1 3.5s ease-in-out infinite alternate !important;
+  }
+  .floating-card-3d:nth-child(2) {
+    animation: mobileCardFloat2 3.8s ease-in-out infinite alternate 0.3s !important;
+  }
+  .floating-card-3d:nth-child(3) {
+    animation: mobileCardFloat3 3.6s ease-in-out infinite alternate 0.6s !important;
+  }
+
+  @keyframes mobileCardFloat1 {
+    0% { transform: translateY(0px); border-color: rgba(0, 245, 212, 0.3); }
+    100% { transform: translateY(-3px); border-color: rgba(0, 245, 212, 0.65); box-shadow: 0 6px 20px rgba(0, 245, 212, 0.25); }
+  }
+  @keyframes mobileCardFloat2 {
+    0% { transform: translateY(0px); border-color: rgba(255, 20, 147, 0.3); }
+    100% { transform: translateY(-3px); border-color: rgba(255, 20, 147, 0.65); box-shadow: 0 6px 20px rgba(255, 20, 147, 0.25); }
+  }
+  @keyframes mobileCardFloat3 {
+    0% { transform: translateY(0px); border-color: rgba(255, 215, 0, 0.3); }
+    100% { transform: translateY(-3px); border-color: rgba(255, 215, 0, 0.65); box-shadow: 0 6px 20px rgba(255, 215, 0, 0.25); }
+  }
+
+  /* Mobile Interactive Touch Tap Feedback & Animations */
+  .btn-primary-3d:active,
+  .btn-hero-action:active,
+  .floating-card-3d:active,
+  .quick-action-card:active,
+  .profile-action-pill:active,
+  .widget-card:active,
+  .gallery-item:active,
+  .album-card-3d:active,
+  .btn-upload:active,
+  .btn-icon:active,
+  .user-profile-badge:active {
+    transform: scale(0.95) translateY(2px) !important;
+    filter: brightness(1.2) !important;
+    box-shadow: 0 2px 8px rgba(0, 245, 212, 0.5) !important;
+    transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.1s ease !important;
+  }
+
+  /* Member Filter Bar on Mobile */
+  .member-filter-bar {
+    padding: 6px 8px !important;
+    margin-bottom: 10px !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap !important;
+  }
+
+  .member-filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .member-filter-bar span:first-child {
+    display: none !important;
+  }
+
+  .member-filter-chip {
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    gap: 4px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Dashboard Widgets Grid on Mobile */
+  .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .widget-card {
+    padding: 10px !important;
+    gap: 8px !important;
+    border-radius: var(--radius-sm) !important;
+  }
+
+  .widget-icon {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 16px !important;
+  }
+
+  /* Videos Vault Header on Mobile */
+  #videos-section-wrap .glass-panel {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 14px 16px !important;
+    gap: 12px !important;
+  }
+
+  #videos-section-wrap .btn-primary-3d {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Favorites Section on Mobile */
+  #favorites-unlocked-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 12px 14px !important;
+  }
+
+  .fav-fx-selector-bar {
+    width: 100% !important;
+    overflow-x: auto !important;
+    padding: 4px 0 !important;
+    gap: 6px !important;
+  }
+
+  .fav-fx-chip {
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    flex-shrink: 0 !important;
+  }
+
+  #favorites-heart-stage .heart-card-3d {
+    width: min(85vw, 300px) !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  /* Photo & Video Gallery Grid (2 Perfect Columns on Mobile) */
+  .gallery-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .photo-card {
+    position: relative !important;
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: var(--radius-sm) !important;
+    overflow: hidden !important;
+    background: var(--bg-tertiary) !important;
+    box-sizing: border-box !important;
+    isolation: isolate !important;
+    contain: paint !important;
+  }
+
+  .photo-card img, .photo-card video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+  }
+
+  .photo-card-overlay {
+    padding: 6px !important;
+    opacity: 1 !important;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 55%) !important;
+  }
+
+  .photo-uploader-badge {
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+    max-width: 85px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .card-stat-chip {
+    font-size: 9.5px !important;
+    padding: 2px 5px !important;
+  }
+
+  .fav-btn {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 13px !important;
+  }
+
+  /* Modals & Dialogs on Mobile (Slide-Up Bottom Sheets) */
+  .modal-overlay {
+    padding: 0 !important;
+    align-items: flex-end !important;
+  }
+
+  .login-card, .modal-card, .admin-modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 88vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    padding: 18px 14px 28px 14px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Fullscreen Photo & Video Viewer on Mobile */
+  .viewer-modal {
+    padding: 0 !important;
+  }
+
+  .viewer-container {
+    flex-direction: column !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+  }
+
+  .viewer-main {
+    height: 50vh !important;
+    width: 100% !important;
+    padding: 6px !important;
+  }
+
+  .viewer-img, #viewer-video {
+    max-height: 46vh !important;
+    max-width: 98% !important;
+    object-fit: contain !important;
+  }
+
+  .viewer-drawer {
+    height: 50vh !important;
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid var(--glass-border) !important;
+    padding: 12px 14px !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Pradhan Guide on Mobile */
+  #pradhan-guide-root,
+  .pradhan-guide-container {
+    position: fixed !important;
+    bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 12px) !important;
+    top: auto !important;
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    max-width: calc(100vw - 16px) !important;
+    gap: 8px !important;
+    z-index: 999999 !important;
+    pointer-events: none !important;
+    transform: none !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+  }
+
+  .pradhan-character-stage {
+    pointer-events: auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .pradhan-character-stage svg,
+  .pradhan-avatar-svg {
+    width: 85px !important;
+    height: 110px !important;
+    display: block !important;
+  }
+
+  .pradhan-speech-bubble {
+    pointer-events: auto !important;
+    padding: 12px 14px !important;
+    border-radius: 16px !important;
+    max-width: calc(100% - 95px) !important;
+    background: rgba(10, 15, 30, 0.98) !important;
+    border: 1.5px solid rgba(0, 245, 212, 0.6) !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 245, 212, 0.35) !important;
+    position: relative !important;
+    z-index: 1000000 !important;
+  }
+
+  .pradhan-bubble-text {
+    font-size: 12.5px !important;
+    line-height: 1.35 !important;
+  }
+
+  .pradhan-bubble-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    margin-top: 8px !important;
+    pointer-events: auto !important;
+  }
+
+  .btn-pradhan-choice {
+    padding: 6px 12px !important;
+    font-size: 11.5px !important;
+    font-weight: 800 !important;
+    border-radius: 12px !important;
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    touch-action: manipulation !important;
+    min-height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* AI Chatbot on Mobile */
+  .ai-chat-launcher {
+    bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 12px) !important;
+    right: 12px !important;
+    padding: 7px 11px !important;
+    gap: 5px !important;
+  }
+
+  .ai-chat-window {
+    right: 8px !important;
+    left: 8px !important;
+    width: auto !important;
+    max-width: calc(100vw - 16px) !important;
+    bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px) + 60px) !important;
+    height: min(440px, 62vh) !important;
+  }
+
+  /* Profile Hub on Mobile (Clean Centered Avatar & Equal Info Grid) */
+  .profile-hero-card {
+    border-radius: 16px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .profile-cover-banner {
+    height: 110px !important;
+    border-radius: 16px 16px 0 0 !important;
+  }
+
+  .profile-header-content {
+    padding: 0 12px 18px 12px !important;
+  }
+
+  .profile-avatar-container {
+    width: 96px !important;
+    height: 96px !important;
+    margin-top: -50px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .profile-main-avatar {
+    width: 96px !important;
+    height: 96px !important;
+    font-size: 46px !important;
+  }
+
+  .profile-display-name {
+    font-size: 20px !important;
+  }
+
+  .profile-info-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 12px auto 8px !important;
+  }
+
+  .profile-info-card {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+    border-radius: 12px !important;
+  }
+
+  .info-card-icon {
+    font-size: 18px !important;
+  }
+
+  .info-card-label {
+    font-size: 9.5px !important;
+  }
+
+  .info-card-val {
+    font-size: 12px !important;
+  }
+
+  .profile-actions-toolbar {
+    gap: 6px !important;
+  }
+
+  .profile-action-pill {
+    padding: 7px 13px !important;
+    font-size: 11.5px !important;
+  }
+
+  .profile-metrics-bar {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 4px !important;
+    padding: 10px 6px !important;
+  }
+
+  .metric-val {
+    font-size: 16px !important;
+  }
+
+  .metric-lbl {
+    font-size: 9.5px !important;
+  }
+
+  .profile-nav-tabs {
+    padding: 8px 10px !important;
+    gap: 4px !important;
+  }
+
+  .profile-tab-btn {
+    padding: 6px 12px !important;
+    font-size: 11.5px !important;
+  }
+
+  /* Mobile Bottom Navigation Bar (Permanently Fixed & Locked at Bottom) */
+  .mobile-bottom-nav {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px)) !important;
+    z-index: 2400 !important;
+    background: rgba(10, 14, 26, 0.96) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    border-top: 1px solid var(--glass-border) !important;
+    box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.5) !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. EXTRA COMPACT PHONES (iPhone SE, Galaxy Fold 320px - 360px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 360px) {
+  .topbar {
+    padding: 0 6px !important;
+    gap: 4px !important;
+  }
+
+  .search-box {
+    max-width: 100px !important;
+    padding: 0 6px !important;
+  }
+
+  .hero-content h1 {
+    font-size: 17px !important;
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hero-action-buttons {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ==========================================================================
+   4. TOUCH INTERACTIVE ELEVATION, GLOW, SCALE & SHADOW SUITE (MOBILE & TABLET)
+   Ultra-Smooth, Natural Timing & Easing Curves (iOS, Android, Tablet)
+   ========================================================================== */
+@media (hover: none) and (pointer: coarse), (max-width: 1024px) {
+  /* Remove gray tap highlight on mobile WebKit */
+  *, *::before, *::after {
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  /* 1. Global Buttons & Action Pills Touch Press / Lift Effect */
+  .btn-primary-3d,
+  .btn-hero-action,
+  .btn-upload,
+  .btn-icon,
+  .profile-action-pill,
+  .btn-follow-main,
+  .btn-edit-profile,
+  .btn-upload-shortcut,
+  .btn-music-download,
+  .btn-pradhan-choice,
+  .speed-btn-step,
+  .user-profile-badge,
+  .mobile-nav-item {
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s cubic-bezier(0.25, 1, 0.5, 1), filter 0.35s ease, background 0.35s ease, border-color 0.35s ease !important;
+    will-change: transform, box-shadow;
+  }
+
+  .btn-primary-3d:active,
+  .btn-primary-3d.touch-active,
+  .btn-hero-action:active,
+  .btn-hero-action.touch-active,
+  .btn-upload:active,
+  .btn-upload.touch-active,
+  .profile-action-pill:active,
+  .profile-action-pill.touch-active,
+  .btn-follow-main:active,
+  .btn-follow-main.touch-active,
+  .btn-edit-profile:active,
+  .btn-edit-profile.touch-active {
+    transform: scale(0.96) translateY(-3px) !important;
+    filter: brightness(1.22) !important;
+    box-shadow: 0 10px 28px rgba(0, 245, 212, 0.55), 0 0 22px rgba(124, 77, 255, 0.45) !important;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s ease !important;
+  }
+
+  .btn-icon:active,
+  .btn-icon.touch-active {
+    transform: scale(0.9) translateY(-1px) !important;
+    background: rgba(255, 255, 255, 0.22) !important;
+    box-shadow: 0 0 18px rgba(0, 245, 212, 0.65) !important;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, background 0.2s ease !important;
+  }
+
+  /* 2. Interactive Cards (Quick Actions, Widgets, Profiles, Music Cards) */
+  .floating-card-3d,
+  .quick-action-card,
+  .widget-card,
+  .music-card,
+  .album-card-3d,
+  .profile-info-card {
+    transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.45s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.4s ease, filter 0.35s ease !important;
+    will-change: transform, box-shadow;
+  }
+
+  .floating-card-3d:active,
+  .floating-card-3d.touch-active,
+  .quick-action-card:active,
+  .quick-action-card.touch-active {
+    transform: translateY(-5px) scale(0.985) !important;
+    border-color: rgba(0, 245, 212, 0.85) !important;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.75), 0 0 28px rgba(0, 245, 212, 0.5) !important;
+    filter: brightness(1.15) !important;
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease !important;
+  }
+
+  .widget-card:active,
+  .widget-card.touch-active {
+    transform: translateY(-4px) scale(0.985) !important;
+    border-color: rgba(124, 77, 255, 0.7) !important;
+    box-shadow: 0 10px 30px rgba(124, 77, 255, 0.4), 0 0 20px rgba(0, 229, 255, 0.3) !important;
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease !important;
+  }
+
+  .music-card:active,
+  .music-card.touch-active {
+    transform: translateY(-3px) scale(0.99) !important;
+    border-color: rgba(255, 20, 147, 0.6) !important;
+    box-shadow: 0 10px 28px rgba(255, 20, 147, 0.35), 0 0 22px rgba(0, 245, 212, 0.3) !important;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease !important;
+  }
+
+  /* 3. Photo & Video Masonry Cards (Tactile Spring Lift & Holographic Aura) */
+  .photo-card,
+  .gallery-item {
+    transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.45s cubic-bezier(0.25, 1, 0.5, 1), filter 0.35s ease !important;
+    will-change: transform, box-shadow;
+  }
+
+  .photo-card:active,
+  .photo-card.touch-active,
+  .gallery-item:active,
+  .gallery-item.touch-active {
+    transform: translateY(-4px) scale(0.975) !important;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.85), 0 0 30px rgba(0, 245, 212, 0.6) !important;
+    filter: brightness(1.12) !important;
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease !important;
+  }
+
+  /* 4. Navigation Items & Tabs Touch Response */
+  .mobile-nav-item {
+    transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), color 0.3s ease !important;
+  }
+
+  .mobile-nav-item:active,
+  .mobile-nav-item.touch-active {
+    transform: scale(0.9) translateY(-2px) !important;
+    color: var(--accent-cyan) !important;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), color 0.18s ease !important;
+  }
+
+  .profile-tab-btn {
+    transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.35s ease !important;
+  }
+
+  .profile-tab-btn:active,
+  .profile-tab-btn.touch-active {
+    transform: scale(0.95) translateY(-1px) !important;
+    box-shadow: 0 6px 18px rgba(124, 77, 255, 0.45) !important;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease !important;
+  }
+
+  /* 5. User Profile Badge & AI Chat Launcher */
+  .user-profile-badge {
+    transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.35s ease, border-color 0.35s ease !important;
+  }
+
+  .user-profile-badge:active,
+  .user-profile-badge.touch-active {
+    transform: scale(0.95) translateY(-1px) !important;
+    border-color: var(--accent-cyan) !important;
+    box-shadow: 0 0 20px rgba(0, 245, 212, 0.55) !important;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease !important;
+  }
+
+  .ai-chat-launcher {
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease !important;
+  }
+
+  .ai-chat-launcher:active,
+  .ai-chat-launcher.touch-active {
+    transform: scale(0.93) translateY(-3px) !important;
+    box-shadow: 0 0 35px rgba(0, 245, 212, 0.85) !important;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease !important;
+  }
+}

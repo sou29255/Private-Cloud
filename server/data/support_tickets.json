@@ -1,0 +1,31 @@
+[
+  {
+    "id": "ticket_1787285640773_23fi",
+    "ticketId": "TCK-MT2FQ2IT-283",
+    "name": "Sumana",
+    "username": "Sumana",
+    "contactEmail": "sumana_contact@test.local",
+    "contactPhone": "",
+    "category": "Photo Fit / Crop Problem",
+    "subject": "My profile picture crop preview test",
+    "message": "Attached screenshot demonstrating the photo preview boundary issue.",
+    "screenshotUrl": "/uploads/originals/support_1787285640772_j240u.png",
+    "status": "OPEN",
+    "createdAt": "2026-08-21T04:14:00.773Z",
+    "updatedAt": "2026-08-21T04:14:00.773Z"
+  },
+  {
+    "id": "ticket_1787285405316_qrks",
+    "ticketId": "TCK-MT2FL0UC-880",
+    "name": "Sumana",
+    "username": "Sumana",
+    "contactEmail": "user_reply_contact@test.local",
+    "contactPhone": "",
+    "category": "Photo Upload Issue",
+    "subject": "My photo orientation is slightly tilted",
+    "message": "I uploaded 3 photos from my phone and wanted to check if they can be rotated automatically.",
+    "status": "OPEN",
+    "createdAt": "2026-08-21T04:10:05.316Z",
+    "updatedAt": "2026-08-21T04:10:05.316Z"
+  }
+]
