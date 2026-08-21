@@ -2592,7 +2592,7 @@ html, body {
     padding-bottom: calc(var(--mobile-nav-height) + 65px) !important;
   }
 
-  /* Topbar Mobile Layout (Permanently Fixed/Sticky at Top) */
+  /* Topbar Mobile Layout (Inherits Smooth Sliding Track from mobileResponsive.css) */
   .topbar {
     position: sticky !important;
     top: 0 !important;
@@ -2601,91 +2601,16 @@ html, body {
     width: 100% !important;
     z-index: 2200 !important;
     height: var(--topbar-height) !important;
-    padding: 0 10px !important;
-    gap: 6px !important;
-    justify-content: space-between !important;
+    padding: 0 8px !important;
+    gap: 8px !important;
+    justify-content: flex-start !important;
     align-items: center !important;
     background: var(--glass-bg) !important;
     backdrop-filter: blur(25px) !important;
     -webkit-backdrop-filter: blur(25px) !important;
     border-bottom: 1px solid var(--glass-border) !important;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45) !important;
-  }
-
-  #sidebar-toggle-btn {
-    display: flex !important;
-    width: 36px !important;
-    height: 36px !important;
-    font-size: 16px !important;
-    flex-shrink: 0 !important;
-  }
-
-  .search-box {
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-    max-width: 160px !important;
-    height: 34px !important;
-    padding: 0 10px !important;
-    border-radius: 18px !important;
-  }
-
-  .search-box input {
-    font-size: 12px !important;
-  }
-
-  .topbar-actions {
-    display: flex !important;
-    align-items: center !important;
-    gap: 5px !important;
-    flex-shrink: 0 !important;
-  }
-
-  /* User Profile Badge in Topbar on Mobile */
-  .user-profile-badge {
-    padding: 4px 8px !important;
-    gap: 4px !important;
-    font-size: 11px !important;
-    max-width: 80px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  #topbar-user-name {
-    display: none !important; /* Hide long name on phone topbar to prevent overlap */
-  }
-
-  /* Hide Desktop-Only Buttons from Phone Topbar */
-  #network-badge,
-  #pwa-install-btn,
-  .topbar-actions button[title="Command Palette (Ctrl + K)"],
-  .topbar-actions button[title="Music Player"] {
-    display: none !important;
-  }
-
-  #topbar-admin-btn {
-    padding: 5px 8px !important;
-    font-size: 11px !important;
-    height: 34px !important;
-  }
-  #topbar-admin-btn span:nth-child(2) {
-    display: none !important; /* Icon only on mobile */
-  }
-
-  .btn-upload {
-    height: 34px !important;
-    padding: 0 10px !important;
-    font-size: 12px !important;
-    border-radius: 18px !important;
-  }
-  .btn-upload span:nth-child(2) {
-    display: none !important; /* Show ➕ icon only */
-  }
-
-  .btn-icon {
-    width: 34px !important;
-    height: 34px !important;
-    font-size: 14px !important;
+    overflow: visible !important;
   }
 
   /* Hero Banner on Mobile (Clean Stack, No 3D Clipping) */
