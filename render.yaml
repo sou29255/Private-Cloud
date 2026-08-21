@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: private-photo-cloud
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: STORAGE_PROVIDER
+        value: local
+      - key: ADMIN_PHONE_NUMBER
+        value: "9239425276"
