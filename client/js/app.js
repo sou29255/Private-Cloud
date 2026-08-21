@@ -7719,11 +7719,67 @@ function initMobileTouchInteractions() {
   document.addEventListener('touchcancel', removeTouchActive, { passive: true });
 }
 
+// Zero-Resistance Horizontal Touch & Mouse Swipe Engine for Topbar
+function initTopbarHorizontalSwipe() {
+  const track = document.querySelector('.topbar-actions');
+  if (!track) return;
+
+  let isDown = false;
+  let startX = 0;
+  let scrollLeft = 0;
+  let hasMoved = false;
+
+  // Touch handlers for mobile
+  track.addEventListener('touchstart', (e) => {
+    isDown = true;
+    hasMoved = false;
+    startX = e.touches[0].pageX - track.offsetLeft;
+    scrollLeft = track.scrollLeft;
+  }, { passive: true });
+
+  track.addEventListener('touchmove', (e) => {
+    if (!isDown) return;
+    const x = e.touches[0].pageX - track.offsetLeft;
+    const walk = (x - startX) * 1.2;
+    if (Math.abs(walk) > 4) {
+      hasMoved = true;
+    }
+    track.scrollLeft = scrollLeft - walk;
+  }, { passive: true });
+
+  track.addEventListener('touchend', () => { isDown = false; }, { passive: true });
+  track.addEventListener('touchcancel', () => { isDown = false; }, { passive: true });
+
+  // Mouse drag handlers for desktop/laptop
+  track.addEventListener('mousedown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+    isDown = true;
+    startX = e.pageX - track.offsetLeft;
+    scrollLeft = track.scrollLeft;
+  });
+
+  track.addEventListener('mouseleave', () => { isDown = false; });
+  track.addEventListener('mouseup', () => { isDown = false; });
+
+  track.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - track.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    track.scrollLeft = scrollLeft - walk;
+  });
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initMobileTouchInteractions);
+  document.addEventListener('DOMContentLoaded', () => {
+    initMobileTouchInteractions();
+    initTopbarHorizontalSwipe();
+  });
 } else {
   initMobileTouchInteractions();
+  initTopbarHorizontalSwipe();
 }
+
 
 
 

@@ -191,15 +191,18 @@
     scrollbar-width: none !important;
     flex: 1 1 auto !important;
     min-width: 0 !important;
+    max-width: calc(100vw - 110px) !important;
     padding: 4px 6px !important;
     flex-wrap: nowrap !important;
-    scroll-snap-type: x proximity !important;
-    scroll-behavior: smooth !important;
     touch-action: pan-x !important;
+    overscroll-behavior-x: contain !important;
+    cursor: grab !important;
   }
 
   .topbar-actions::-webkit-scrollbar {
     display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 
   /* User Profile Badge in Sliding Track */
