@@ -11,8 +11,10 @@ if (!fs.existsSync(musicDir)) {
   fs.mkdirSync(musicDir, { recursive: true });
 }
 
-// Default Seed Track Meta
+// Default Seed Track Meta (16 Vault Tracks)
 const defaultSeedDetails = [
+  { title: 'The Weekend - Blinding Lights', genre: 'Enjoyful Song', emoji: '⚡', desc: 'Electrifying Synthpop Beat' },
+  { title: 'The Weeknd - Starboy', genre: 'Enjoyful Song', emoji: '✨', desc: 'Smooth Pop Fusion' },
   { title: 'Tum Hi Ho', genre: 'Romantic Song', emoji: '❤️', desc: 'Heartfelt Love Melody' },
   { title: 'Channa Mereya', genre: 'Sad Song', emoji: '🌧️', desc: 'Emotional Soulful Track' },
   { title: 'Kesariya', genre: 'Romantic Song', emoji: '💖', desc: 'Sweet Romantic Rhythm' },
