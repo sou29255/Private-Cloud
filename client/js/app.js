@@ -63,7 +63,7 @@ function triggerPwaInstall() {
     deferredPwaPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
         playSuccessSound();
-        showToast('Private Photo Cloud app installed successfully! 📲✨', 'success');
+        showToast('Memora app installed successfully! 📲✨', 'success');
       }
       deferredPwaPrompt = null;
       const btn = document.getElementById('pwa-install-btn');
@@ -778,13 +778,14 @@ function renderHeroSpotlight(photos) {
         `;
       } else {
         mediaHtml = `
-          <img class="floating-card-media" src="${mediaSrc}" alt="${p.originalName || 'Memory'}" loading="lazy" onerror="this.style.opacity='0.4';" />
+          <img class="floating-card-media" src="${mediaSrc}" alt="${p.originalName || 'Memory'}" loading="lazy" />
           <span class="floating-card-tag tag-photo">🖼️ Photo</span>
         `;
       }
 
       return `
         <div class="floating-card-3d" 
+             style="background-image: url('${mediaSrc}');"
              onclick="openViewer(${realIdx >= 0 ? realIdx : 0})"
              title="Click to view ${isVideo ? 'video' : 'photo'} by ${uploaderName}">
           ${mediaHtml}

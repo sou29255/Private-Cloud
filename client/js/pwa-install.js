@@ -62,7 +62,7 @@
       topbarBtn.style.display = 'none';
     }
     if (typeof window.showToast === 'function') {
-      window.showToast('🎉 Private Photo Cloud installed successfully as an App!', 'success');
+      window.showToast('🎉 Memora installed successfully as an App!', 'success');
     }
     console.log('[PWA] Application successfully installed.');
   });
@@ -71,7 +71,7 @@
   function executeInstall() {
     if (isRunningStandalone()) {
       if (typeof window.showToast === 'function') {
-        window.showToast('✅ Private Photo Cloud is already installed and running in App Mode!', 'success');
+        window.showToast('✅ Memora is already installed and running in App Mode!', 'success');
       }
       return;
     }
@@ -81,7 +81,7 @@
       _deferredInstallPrompt.userChoice.then(function (choiceResult) {
         if (choiceResult && choiceResult.outcome === 'accepted') {
           if (typeof window.showToast === 'function') {
-            window.showToast('Private Photo Cloud app installed! 📲✨', 'success');
+            window.showToast('Memora app installed! 📲✨', 'success');
           }
           if (typeof window.playSuccessSound === 'function') {
             window.playSuccessSound();

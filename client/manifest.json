@@ -2,7 +2,7 @@
   "name": "Memora — Private Cloud Vault",
   "short_name": "Memora",
   "description": "Memora - Ultra-secure 4K Cloud Memories & Music Vault",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
@@ -10,24 +10,31 @@
   "theme_color": "#7c4dff",
   "icons": [
     {
-      "src": "/images/memora-icon-192.png",
+      "src": "./images/memora-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "/images/memora-icon-512.png",
+      "src": "./images/memora-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/images/apple-touch-icon.png",
+      "src": "./images/apple-touch-icon.png",
       "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/assets/memora-logo.png",
+      "src": "./assets/memora-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -39,14 +46,14 @@
       "short_name": "Photos",
       "description": "View all 4K Memories",
       "url": "/#photos",
-      "icons": [{ "src": "/images/memora-icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "./images/memora-icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Music Vault",
       "short_name": "Music",
       "description": "Play Bollywood Vault Music",
       "url": "/#music",
-      "icons": [{ "src": "/images/memora-icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "./images/memora-icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

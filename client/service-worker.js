@@ -1,5 +1,5 @@
-// Private Photo Cloud - Service Worker & Offline Sync Engine (v5-live)
-const CACHE_NAME = 'photo-cloud-v5-live';
+// Memora - Service Worker & Instant Update Engine (memora-pwa-v8-live)
+const CACHE_NAME = 'memora-pwa-v8-live';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -9,7 +9,11 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.map((key) => caches.delete(key))
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
       );
     }).then(() => self.clients.claim())
   );
