@@ -2,6 +2,7 @@ const fs = require('fs');
 const fsp = require('fs').promises;
 const path = require('path');
 const dbStore = require('../services/dbStore');
+const storageProvider = require('../storage/storageProvider');
 
 const musicDir = path.join(__dirname, '../../music');
 
@@ -32,7 +33,8 @@ let cachedMusicFiles = [];
 
 async function getOrLoadMusicFiles() {
   const audioExtensions = ['.mp3', '.mpeg', '.wav', '.ogg', '.m4a', '.aac', '.flac'];
-  const files = await fsp.readdir(musicDir);
+  if (!fs.existsSync(musicDir)) return [];
+  const files = await fsp.readdir(musicDir).catch(() => []);
   cachedMusicFiles = files
     .filter(f => audioExtensions.includes(path.extname(f).toLowerCase()))
     .sort((a, b) => a.localeCompare(b));
@@ -44,30 +46,41 @@ const getMusicList = async (req, res) => {
     const files = await getOrLoadMusicFiles();
     const communityTracks = dbStore.getCommunityTracks();
 
-    // 1. Map community uploaded tracks
-    const mappedCommunityTracks = communityTracks.map((ct) => ({
-      id: ct.id,
-      title: ct.title,
-      artist: ct.artist || 'Community Artist',
-      genre: ct.genre || 'Melodic Song',
-      emoji: ct.emoji || '🎵',
-      description: (ct.description || `${ct.genre || 'Melodic Song'} by ${ct.artist || 'Artist'}`).replace(/@\S+/g, '').trim(),
-      addedBy: ct.addedBy || { username: 'Community', displayName: 'Community', avatar: '🎵' },
-      isCommunity: true,
-      filename: ct.filename,
-      url: `/api/music/stream-custom/${ct.id}`,
-      downloadUrl: `/api/music/download-custom/${ct.id}?name=${encodeURIComponent(ct.title)}`,
-      createdAt: ct.createdAt
-    }));
+    // 1. Map community uploaded tracks (filtering out deleted tracks)
+    const mappedCommunityTracks = communityTracks
+      .filter(ct => !dbStore.isDeletedTrack(ct.id, ct.title, ct.filename))
+      .map((ct) => ({
+        id: ct.id,
+        title: ct.title,
+        artist: ct.artist || 'Community Artist',
+        genre: ct.genre || 'Melodic Song',
+        emoji: ct.emoji || '🎵',
+        description: (ct.description || `${ct.genre || 'Melodic Song'} by ${ct.artist || 'Artist'}`).replace(/@\S+/g, '').trim(),
+        addedBy: ct.addedBy || { username: 'Community', displayName: 'Community', avatar: '🎵' },
+        isCommunity: true,
+        filename: ct.filename,
+        cloudUrl: ct.cloudUrl || '',
+        url: ct.cloudUrl || `/api/music/stream-custom/${ct.id}`,
+        downloadUrl: `/api/music/download-custom/${ct.id}?name=${encodeURIComponent(ct.title)}`,
+        createdAt: ct.createdAt
+      }));
 
-    // 2. Map seed tracks (filter out community tracks so no duplicate files)
+    // 2. Map seed tracks (filter out community tracks & deleted tracks)
     const communityFilenames = new Set(communityTracks.map(ct => ct.filename));
     const seedFiles = files.filter(f => !communityFilenames.has(f));
 
-    const mappedSeedTracks = seedFiles.map((filename, index) => {
+    const mappedSeedTracks = [];
+    seedFiles.forEach((filename, index) => {
       const detail = defaultSeedDetails[index % defaultSeedDetails.length];
-      return {
-        id: `track_seed_${index + 1}`,
+      const trackId = `track_seed_${index + 1}`;
+      
+      // Skip if deleted by Head Admin
+      if (dbStore.isDeletedTrack(trackId, detail.title, filename)) {
+        return;
+      }
+
+      mappedSeedTracks.push({
+        id: trackId,
         trackNumber: index + 1,
         title: detail.title,
         artist: 'Bollywood Vault',
@@ -79,7 +92,7 @@ const getMusicList = async (req, res) => {
         filename: filename,
         url: `/api/music/stream/${index}`,
         downloadUrl: `/api/music/download/${index}?name=${encodeURIComponent(detail.title)}`
-      };
+      });
     });
 
     // Community tracks at the top, followed by seed tracks
@@ -104,7 +117,6 @@ const getMusicList = async (req, res) => {
 function analyzeAudioInfo(filename, userTitle, userArtist, userGenre, userEmoji) {
   let rawName = (userTitle || path.parse(filename).name || 'Track').trim();
   
-  // Clean prefixes and suffixes like 'yt1s.com - ', '320kbps', '[Official Audio]', 'WhatsApp Audio ...'
   rawName = rawName
     .replace(/^WhatsApp Audio \d{4}-\d{2}-\d{2} at [\d.]+ [AP]M/i, 'Voice Memory')
     .replace(/^(yt1s\.com|pagalworld|mr-jatt|djmaza|spotifydown|y2mate)[\s\-_]+/i, '')
@@ -117,7 +129,6 @@ function analyzeAudioInfo(filename, userTitle, userArtist, userGenre, userEmoji)
   let detectedArtist = userArtist ? userArtist.trim() : '';
   let detectedTitle = rawName;
 
-  // If contains " - " or " by ", split artist and title
   if (!detectedArtist && detectedTitle.includes(' - ')) {
     const parts = detectedTitle.split(' - ');
     if (parts.length >= 2) {
@@ -126,11 +137,9 @@ function analyzeAudioInfo(filename, userTitle, userArtist, userGenre, userEmoji)
     }
   }
 
-  // Capitalize nicely
   detectedTitle = detectedTitle.charAt(0).toUpperCase() + detectedTitle.slice(1);
   if (!detectedArtist) detectedArtist = 'Original Recording';
 
-  // Keyword-based Genre & Mood Analysis
   const combinedText = `${detectedTitle} ${detectedArtist} ${rawName}`.toLowerCase();
   let genre = userGenre || 'Romantic Song';
   let emoji = userEmoji || '💖';
@@ -177,12 +186,25 @@ const uploadMusicTrack = async (req, res) => {
     // Run AI Audio Analyzer to standardize Title, Artist, Genre and Mood
     const analysis = analyzeAudioInfo(req.file.originalname, title, artist, rawGenre, rawEmoji);
 
-    // Save buffer to file in musicDir
     const cleanExt = path.extname(req.file.originalname) || '.mp3';
     const cleanName = analysis.title.toLowerCase().replace(/[^a-z0-9_-]/g, '_').slice(0, 30);
     filename = `comm_${Date.now()}_${cleanName}${cleanExt}`;
-    const destPath = path.join(musicDir, filename);
-    await fsp.writeFile(destPath, req.file.buffer);
+
+    // Upload to persistent storage (Cloudinary or local)
+    const cloudUrlOrRelPath = await storageProvider.saveFile(
+      req.file.buffer,
+      `music/${filename}`,
+      req.file.mimetype || 'audio/mpeg'
+    );
+
+    const isCloud = cloudUrlOrRelPath && (cloudUrlOrRelPath.startsWith('http://') || cloudUrlOrRelPath.startsWith('https://'));
+    const finalCloudUrl = isCloud ? cloudUrlOrRelPath : '';
+
+    // Also write local file copy if local storage
+    if (!isCloud) {
+      const destPath = path.join(musicDir, filename);
+      await fsp.writeFile(destPath, req.file.buffer).catch(() => {});
+    }
 
     // Resolve Uploader Details
     let uploader = {
@@ -201,14 +223,18 @@ const uploadMusicTrack = async (req, res) => {
       };
     }
 
+    const trackId = `comm_track_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const newTrack = {
-      id: `comm_track_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      id: trackId,
       title: analysis.title,
       artist: analysis.artist,
       genre: analysis.genre,
       emoji: analysis.emoji,
       description: (description || `${analysis.genre} by ${analysis.artist}`).replace(/@\S+/g, '').trim(),
       filename: filename,
+      cloudUrl: finalCloudUrl,
+      downloadUrl: `/api/music/download-custom/${trackId}?name=${encodeURIComponent(analysis.title)}`,
+      storageProvider: isCloud ? 'cloudinary' : 'local',
       addedBy: uploader,
       createdAt: new Date().toISOString()
     };
@@ -217,7 +243,7 @@ const uploadMusicTrack = async (req, res) => {
 
     return res.json({
       success: true,
-      message: `"${newTrack.title}" (${newTrack.genre}) analyzed & arranged into Music Vault successfully! 🎵`,
+      message: `"${newTrack.title}" (${newTrack.genre}) added to Music Vault permanently! 🎵`,
       track: newTrack
     });
   } catch (err) {
@@ -238,7 +264,7 @@ const deleteMusicTrack = async (req, res) => {
         success: false,
         error: {
           code: 'FORBIDDEN',
-          message: 'Only Soumya (Head Admin) has the authority to delete tracks from the Music Vault.'
+          message: 'Access Denied: Only Soumya (Head Admin) has the authority to delete tracks from the Music Vault.'
         }
       });
     }
@@ -247,8 +273,21 @@ const deleteMusicTrack = async (req, res) => {
     const trackToDelete = communityTracks.find(t => t.id === trackId);
 
     if (trackToDelete) {
+      // Delete from active tracks and add to permanent deleted registry
       dbStore.deleteCommunityTrack(trackId);
-      
+      dbStore.addDeletedTrack({
+        trackId: trackToDelete.id,
+        title: trackToDelete.title,
+        filename: trackToDelete.filename,
+        deletedBy: 'Soumya'
+      });
+
+      // Delete from cloud storage if stored in Cloudinary
+      if (trackToDelete.cloudUrl) {
+        await storageProvider.deleteFile(trackToDelete.cloudUrl, 'video').catch(() => {});
+      }
+
+      // Delete local file if present
       if (trackToDelete.filename) {
         const filePath = path.join(musicDir, trackToDelete.filename);
         if (fs.existsSync(filePath)) {
@@ -259,6 +298,35 @@ const deleteMusicTrack = async (req, res) => {
       return res.json({
         success: true,
         message: `Track "${trackToDelete.title}" was permanently removed by Soumya! 🗑️`
+      });
+    }
+
+    // Check if it's a seed track (e.g. track_seed_1)
+    if (trackId.startsWith('track_seed_')) {
+      const parts = trackId.split('_');
+      const seedIdx = parseInt(parts[2], 10) - 1;
+      const files = await getOrLoadMusicFiles();
+      const filename = files[seedIdx] || '';
+      const detail = defaultSeedDetails[seedIdx % defaultSeedDetails.length];
+      const title = detail?.title || `Track ${seedIdx + 1}`;
+
+      dbStore.addDeletedTrack({
+        trackId: trackId,
+        title: title,
+        filename: filename,
+        deletedBy: 'Soumya'
+      });
+
+      if (filename) {
+        const filePath = path.join(musicDir, filename);
+        if (fs.existsSync(filePath)) {
+          await fsp.unlink(filePath).catch(() => {});
+        }
+      }
+
+      return res.json({
+        success: true,
+        message: `Seed Track "${title}" was permanently removed by Soumya! 🗑️`
       });
     }
 
@@ -344,6 +412,11 @@ const streamCustomAudio = async (req, res) => {
       return res.status(404).json({ error: 'Track not found' });
     }
 
+    // If hosted on Cloudinary or external cloud, redirect directly
+    if (track.cloudUrl && (track.cloudUrl.startsWith('http://') || track.cloudUrl.startsWith('https://'))) {
+      return res.redirect(302, track.cloudUrl);
+    }
+
     const filePath = path.join(musicDir, track.filename);
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: 'Audio file not found on disk' });
@@ -425,6 +498,10 @@ const downloadCustomAudio = async (req, res) => {
 
     if (!track) {
       return res.status(404).json({ error: 'Track not found' });
+    }
+
+    if (track.cloudUrl && (track.cloudUrl.startsWith('http://') || track.cloudUrl.startsWith('https://'))) {
+      return res.redirect(302, track.cloudUrl);
     }
 
     const filePath = path.join(musicDir, track.filename);

@@ -1,5 +1,5 @@
 const dbStore = require('../services/dbStore');
-const storageProvider = require('../storage/localStorageProvider');
+const storageProvider = require('../storage/storageProvider');
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs').promises;
@@ -234,10 +234,9 @@ const uploadAvatar = async (req, res) => {
       .webp({ quality: 92, effort: 6 })
       .toBuffer();
 
-    await storageProvider.saveFile(webpBuffer, avatarRelPath);
-
-    // Correct URL served through /api/users/avatar/:filename
-    const customAvatarUrl = `/api/users/avatar/${filenameKey}`;
+    const savedUrlOrPath = await storageProvider.saveFile(webpBuffer, avatarRelPath, 'image/webp');
+    const isCloud = savedUrlOrPath && (savedUrlOrPath.startsWith('http://') || savedUrlOrPath.startsWith('https://'));
+    const customAvatarUrl = isCloud ? savedUrlOrPath : `/api/users/avatar/${filenameKey}`;
 
     dbStore.updateUser(username, { customAvatarUrl });
 

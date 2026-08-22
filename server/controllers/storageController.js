@@ -1,4 +1,4 @@
-const storageProvider = require('../storage/localStorageProvider');
+const storageProvider = require('../storage/storageProvider');
 const dbStore = require('../services/dbStore');
 const env = require('../config/env');
 
@@ -14,10 +14,10 @@ const getStorageAnalytics = async (req, res) => {
     photos.forEach(p => {
       if (p.isVideo) {
         videoCount++;
-        totalVideosSize += (p.size || 0);
+        totalVideosSize += (p.size || 15 * 1024 * 1024);
       } else {
         photoCount++;
-        totalPhotosSize += (p.size || 0);
+        totalPhotosSize += (p.size || 2.5 * 1024 * 1024);
       }
     });
 
@@ -26,10 +26,11 @@ const getStorageAnalytics = async (req, res) => {
     const totalBytes = capacityGB * 1024 * 1024 * 1024;
     const availableBytes = Math.max(0, totalBytes - usedBytes);
     const usedPercentage = Number(((usedBytes / totalBytes) * 100).toFixed(2));
+    const activeProvider = storageProvider.getProvider();
 
     return res.json({
       success: true,
-      provider: 'Local NAS / Server Storage',
+      provider: activeProvider.name || 'Cloud Storage Vault',
       usedBytes,
       availableBytes,
       totalBytes,

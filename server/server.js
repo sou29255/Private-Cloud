@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -7,6 +8,21 @@ const compression = require('compression');
 const env = require('./config/env');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
+
+// Ensure required static and media directories exist on startup
+[
+  path.join(__dirname, '../uploads'),
+  path.join(__dirname, '../uploads/originals'),
+  path.join(__dirname, '../uploads/thumbnails'),
+  path.join(__dirname, '../uploads/medium'),
+  path.join(__dirname, '../music'),
+  path.join(__dirname, '../photo'),
+  path.join(__dirname, '../server/data')
+].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
 
 // Initialize Express App
 const app = express();

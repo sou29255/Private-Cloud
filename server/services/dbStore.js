@@ -9,6 +9,7 @@ const PHOTOS_FILE = path.join(DATA_DIR, 'photos.json');
 const MESSAGES_FILE = path.join(DATA_DIR, 'messages.json');
 const CHAT_REQUESTS_FILE = path.join(DATA_DIR, 'chat_requests.json');
 const COMMUNITY_MUSIC_FILE = path.join(DATA_DIR, 'community_music.json');
+const DELETED_TRACKS_FILE = path.join(DATA_DIR, 'deleted_tracks.json');
 const ALBUMS_FILE = path.join(DATA_DIR, 'albums.json');
 
 // Ensure data directory exists
@@ -53,12 +54,14 @@ class DBStore {
     this.messagesCache = [];
     this.chatRequestsCache = [];
     this.musicCache = [];
+    this.deletedTracksCache = [];
     this.albumsCache = [];
     this.photosWriteTimer = null;
     this.usersWriteTimer = null;
     this.messagesWriteTimer = null;
     this.chatRequestsWriteTimer = null;
     this.musicWriteTimer = null;
+    this.deletedTracksWriteTimer = null;
     this.albumsWriteTimer = null;
     this.isWritingPhotos = false;
     this.isWritingUsers = false;
@@ -178,6 +181,61 @@ class DBStore {
         this.albumsCache = [];
       }
     }
+
+    // 7. Initialize Deleted Tracks in-memory cache (Prevents deleted songs from returning)
+    if (!fs.existsSync(DELETED_TRACKS_FILE)) {
+      this.deletedTracksCache = [];
+      this.persistDeletedTracksAsync();
+    } else {
+      try {
+        const raw = fs.readFileSync(DELETED_TRACKS_FILE, 'utf8');
+        this.deletedTracksCache = JSON.parse(raw) || [];
+      } catch (e) {
+        this.deletedTracksCache = [];
+      }
+    }
+
+    // Sync with persistent MongoDB if connected
+    this.syncWithMongoDB();
+  }
+
+  async syncWithMongoDB() {
+    try {
+      const mongoose = require('mongoose');
+      if (mongoose.connection && mongoose.connection.readyState === 1) {
+        const DeletedTrack = require('../models/DeletedTrack');
+        const Music = require('../models/Music');
+
+        // Sync Deleted Tracks from MongoDB
+        const dbDeleted = await DeletedTrack.find({}).lean();
+        if (dbDeleted && dbDeleted.length > 0) {
+          dbDeleted.forEach(dt => {
+            if (!this.deletedTracksCache.some(c => c.trackId === dt.trackId || (c.filename && c.filename === dt.filename))) {
+              this.deletedTracksCache.push({
+                trackId: dt.trackId,
+                title: dt.title,
+                filename: dt.filename,
+                deletedBy: dt.deletedBy,
+                deletedAt: dt.deletedAt
+              });
+            }
+          });
+          this.persistDeletedTracksAsync();
+        }
+
+        // Sync Community Music from MongoDB
+        const dbMusic = await Music.find({}).lean();
+        if (dbMusic && dbMusic.length > 0) {
+          dbMusic.forEach(m => {
+            const isDel = this.deletedTracksCache.some(d => d.trackId === m.id || (d.filename && d.filename === m.filename));
+            if (!isDel && !this.musicCache.some(c => c.id === m.id)) {
+              this.musicCache.unshift(m);
+            }
+          });
+          this.persistCommunityMusicAsync();
+        }
+      }
+    } catch (e) {}
   }
 
   // O(1) Instant In-Memory Read Operations
@@ -774,13 +832,31 @@ class DBStore {
 
   // Community Music Vault Operations
   getCommunityTracks() {
-    return this.musicCache || [];
+    const deleted = this.deletedTracksCache || [];
+    return (this.musicCache || []).filter(t => {
+      const isDel = deleted.some(d => 
+        (d.trackId && d.trackId === t.id) || 
+        (d.filename && d.filename === t.filename) ||
+        (d.title && t.title && d.title.toLowerCase().trim() === t.title.toLowerCase().trim())
+      );
+      return !isDel;
+    });
   }
 
   addCommunityTrack(track) {
     if (!this.musicCache) this.musicCache = [];
     this.musicCache.unshift(track);
     this.persistCommunityMusicAsync();
+
+    // Sync to MongoDB
+    try {
+      const mongoose = require('mongoose');
+      if (mongoose.connection && mongoose.connection.readyState === 1) {
+        const Music = require('../models/Music');
+        Music.create(track).catch(() => {});
+      }
+    } catch (e) {}
+
     return track;
   }
 
@@ -790,9 +866,92 @@ class DBStore {
     this.musicCache = this.musicCache.filter(t => t.id !== trackId);
     if (this.musicCache.length < initialLen) {
       this.persistCommunityMusicAsync();
-      return true;
     }
-    return false;
+
+    try {
+      const mongoose = require('mongoose');
+      if (mongoose.connection && mongoose.connection.readyState === 1) {
+        const Music = require('../models/Music');
+        Music.deleteOne({ id: trackId }).catch(() => {});
+      }
+    } catch (e) {}
+
+    return true;
+  }
+
+  // Permanent Deleted Music Registry (Prevents deleted songs from returning on restart)
+  addDeletedTrack(trackData) {
+    if (!this.deletedTracksCache) this.deletedTracksCache = [];
+    const entry = {
+      trackId: trackData.trackId || `del_${Date.now()}`,
+      title: trackData.title || '',
+      filename: trackData.filename || '',
+      deletedBy: trackData.deletedBy || 'Soumya',
+      deletedAt: new Date().toISOString()
+    };
+
+    const exists = this.deletedTracksCache.some(d => 
+      (entry.trackId && d.trackId === entry.trackId) ||
+      (entry.filename && d.filename && d.filename === entry.filename) ||
+      (entry.title && d.title && d.title.toLowerCase().trim() === entry.title.toLowerCase().trim())
+    );
+
+    if (!exists) {
+      this.deletedTracksCache.push(entry);
+      this.persistDeletedTracksAsync();
+    }
+
+    // Also remove from local music cache
+    if (this.musicCache) {
+      this.musicCache = this.musicCache.filter(t => 
+        t.id !== entry.trackId && 
+        (!entry.filename || t.filename !== entry.filename) &&
+        (!entry.title || !t.title || t.title.toLowerCase().trim() !== entry.title.toLowerCase().trim())
+      );
+      this.persistCommunityMusicAsync();
+    }
+
+    // Sync deletion to MongoDB
+    try {
+      const mongoose = require('mongoose');
+      if (mongoose.connection && mongoose.connection.readyState === 1) {
+        const DeletedTrack = require('../models/DeletedTrack');
+        const Music = require('../models/Music');
+        DeletedTrack.create(entry).catch(() => {});
+        Music.deleteOne({ id: entry.trackId }).catch(() => {});
+      }
+    } catch (e) {}
+
+    return entry;
+  }
+
+  isDeletedTrack(trackId, title = '', filename = '') {
+    if (!this.deletedTracksCache || this.deletedTracksCache.length === 0) return false;
+    const cleanTitle = (title || '').toLowerCase().trim();
+    const cleanFilename = (filename || '').toLowerCase().trim();
+    return this.deletedTracksCache.some(d => {
+      if (trackId && d.trackId === trackId) return true;
+      if (cleanFilename && d.filename && d.filename.toLowerCase().trim() === cleanFilename) return true;
+      if (cleanTitle && d.title && d.title.toLowerCase().trim() === cleanTitle) return true;
+      return false;
+    });
+  }
+
+  getDeletedTracks() {
+    return this.deletedTracksCache || [];
+  }
+
+  persistDeletedTracksAsync() {
+    if (this.deletedTracksWriteTimer) clearTimeout(this.deletedTracksWriteTimer);
+    this.deletedTracksWriteTimer = setTimeout(async () => {
+      try {
+        const tmpFile = `${DELETED_TRACKS_FILE}.tmp`;
+        await fsp.writeFile(tmpFile, JSON.stringify(this.deletedTracksCache, null, 2), 'utf8');
+        await fsp.rename(tmpFile, DELETED_TRACKS_FILE);
+      } catch (err) {
+        console.error('[DBStore] Failed to persist deleted tracks:', err);
+      }
+    }, 100);
   }
 
   persistCommunityMusicAsync() {

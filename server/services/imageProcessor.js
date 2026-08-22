@@ -1,7 +1,7 @@
 const sharp = require('sharp');
 const crypto = require('crypto');
 const path = require('path');
-const storageProvider = require('../storage/localStorageProvider');
+const storageProvider = require('../storage/storageProvider');
 
 // Set Sharp memory limit and concurrency to prevent CPU/memory exhaustion
 sharp.cache({ memory: 80, files: 20, items: 100 });
@@ -12,7 +12,7 @@ class ImageProcessor {
     return crypto.createHash('sha256').update(buffer).digest('hex');
   }
 
-  async processImage(buffer, originalFilename) {
+  async processImage(buffer, originalFilename, mimeType) {
     const hash = this.calculateHash(buffer);
     const ext = path.extname(originalFilename).toLowerCase() || '.jpg';
     const baseName = path.basename(originalFilename, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -23,10 +23,14 @@ class ImageProcessor {
     const mediumRelPath = `medium/${filenameKey}.webp`;
     const thumbRelPath = `thumbnails/${filenameKey}.webp`;
 
-    // Save original image/video
-    await storageProvider.saveFile(buffer, originalRelPath);
+    const isVideo = (mimeType && mimeType.startsWith('video/')) || ['.mp4', '.mov', '.avi', '.webm', '.mkv'].includes(ext);
 
-    const isVideo = ['.mp4', '.mov', '.avi', '.webm', '.mkv'].includes(ext);
+    // Save original image/video to persistent storage (Cloudinary or local)
+    const originalSaved = await storageProvider.saveFile(
+      buffer,
+      originalRelPath,
+      isVideo ? (mimeType || 'video/mp4') : (mimeType || 'image/jpeg')
+    );
 
     let metadata = { width: 0, height: 0, format: isVideo ? 'video' : 'unknown' };
     let exifData = {
@@ -39,12 +43,15 @@ class ImageProcessor {
       dateTaken: new Date()
     };
 
+    let mediumSaved = originalSaved;
+    let thumbSaved = originalSaved;
+
     if (!isVideo) {
       try {
         const sharpImage = sharp(buffer, { failOnError: false });
         metadata = await sharpImage.metadata().catch(() => ({ width: 1920, height: 1080 }));
 
-        // Generate medium preview and thumbnail concurrently in parallel for 5x speed
+        // Generate medium preview and thumbnail concurrently in parallel
         const [mediumBuffer, thumbBuffer] = await Promise.all([
           sharp(buffer, { failOnError: false })
             .rotate()
@@ -60,8 +67,12 @@ class ImageProcessor {
             .catch(() => null)
         ]);
 
-        if (mediumBuffer) await storageProvider.saveFile(mediumBuffer, mediumRelPath);
-        if (thumbBuffer) await storageProvider.saveFile(thumbBuffer, thumbRelPath);
+        if (mediumBuffer) {
+          mediumSaved = await storageProvider.saveFile(mediumBuffer, mediumRelPath, 'image/webp');
+        }
+        if (thumbBuffer) {
+          thumbSaved = await storageProvider.saveFile(thumbBuffer, thumbRelPath, 'image/webp');
+        }
 
         if (metadata.exif) {
           exifData.camera = `${metadata.make || ''} ${metadata.model || ''}`.trim() || 'Digital Camera';
@@ -76,9 +87,9 @@ class ImageProcessor {
       filename: `${filenameKey}${ext}`,
       width: metadata.width || 1920,
       height: metadata.height || 1080,
-      originalRelPath,
-      mediumRelPath: metadata.width ? mediumRelPath : originalRelPath,
-      thumbRelPath: metadata.width ? thumbRelPath : originalRelPath,
+      originalRelPath: originalSaved || originalRelPath,
+      mediumRelPath: mediumSaved || mediumRelPath,
+      thumbRelPath: thumbSaved || thumbRelPath,
       exif: exifData
     };
   }

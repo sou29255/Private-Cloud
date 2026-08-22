@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/uploadMiddleware');
 const { protect } = require('../middleware/authMiddleware');
-const storageProvider = require('../storage/localStorageProvider');
+const storageProvider = require('../storage/storageProvider');
 const path = require('path');
 const fs = require('fs');
 const {
@@ -33,6 +33,9 @@ router.get('/avatar/:filename', async (req, res) => {
     const { filename } = req.params;
     const cleanFilename = path.basename(filename);
     const fullPath = await storageProvider.getFilePath(`thumbnails/${cleanFilename}`);
+    if (fullPath && (fullPath.startsWith('http://') || fullPath.startsWith('https://'))) {
+      return res.redirect(302, fullPath);
+    }
     if (fs.existsSync(fullPath)) {
       return res.sendFile(fullPath);
     }

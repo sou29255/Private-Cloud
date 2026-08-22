@@ -1,5 +1,5 @@
 // Private Photo Cloud SPA Master Application Controller (Two-Stage Profile Auth, Multi-User Attribution & Upload Engine)
-const API_ORIGIN = (window.location.protocol === 'file:' || (window.location.port && window.location.port !== '5000')) ? 'http://localhost:5000' : '';
+const API_ORIGIN = (window.location.protocol === 'file:' || ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port && window.location.port !== '5000')) ? 'http://localhost:5000' : '';
 
 let currentUser = null;
 let authToken = localStorage.getItem('vault_auth_token') || '';
@@ -757,11 +757,37 @@ function renderHeroSpotlight(photos) {
       const likes = typeof p.likes === 'number' ? p.likes : (p.likedBy?.length || 0);
       const realIdx = currentPhotos.findIndex(cp => (cp._id === photoId || cp.id === photoId));
 
+      const isVideo = Boolean(
+        p.isVideo || 
+        p.mimeType?.startsWith('video/') ||
+        ['.mp4', '.mov', '.avi', '.webm', '.mkv'].some(ext => (p.filename || p.originalName || '').toLowerCase().endsWith(ext))
+      );
+
+      // Resolve high-res / medium URL
+      let mediaSrc = p.storagePaths?.medium || p.storagePaths?.thumbnail || p.storagePaths?.original || p.url || '';
+      if (!mediaSrc || !mediaSrc.startsWith('http')) {
+        mediaSrc = `${API_ORIGIN}/api/photos/file/${photoId}/${isVideo ? 'original' : 'medium'}`;
+      }
+
+      let mediaHtml = '';
+      if (isVideo) {
+        mediaHtml = `
+          <video class="floating-card-media" src="${mediaSrc}" muted loop playsinline preload="metadata" onmouseover="this.play().catch(()=>{})" onmouseout="this.pause()"></video>
+          <div class="floating-card-play-icon">▶</div>
+          <span class="floating-card-tag tag-video">🎬 Video</span>
+        `;
+      } else {
+        mediaHtml = `
+          <img class="floating-card-media" src="${mediaSrc}" alt="${p.originalName || 'Memory'}" loading="lazy" onerror="this.style.opacity='0.4';" />
+          <span class="floating-card-tag tag-photo">🖼️ Photo</span>
+        `;
+      }
+
       return `
         <div class="floating-card-3d" 
-             style="background-image: url('${API_ORIGIN}/api/photos/file/${photoId}/medium');"
              onclick="openViewer(${realIdx >= 0 ? realIdx : 0})"
-             title="Click to view memory by ${uploaderName}">
+             title="Click to view ${isVideo ? 'video' : 'photo'} by ${uploaderName}">
+          ${mediaHtml}
           <div class="floating-card-overlay">
             <div class="floating-card-badge">
               <span>👤 ${uploaderName}</span>

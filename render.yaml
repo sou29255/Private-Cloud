@@ -9,6 +9,6 @@ services:
       - key: NODE_ENV
         value: production
       - key: STORAGE_PROVIDER
-        value: local
+        value: cloudinary
       - key: ADMIN_PHONE_NUMBER
         value: "9239425276"

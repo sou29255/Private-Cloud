@@ -1,9 +1,9 @@
 const fs = require('fs').promises;
 const path = require('path');
-const StorageProvider = require('./storageProvider');
+const BaseStorageProvider = require('./baseStorageProvider');
 const env = require('../config/env');
 
-class LocalStorageProvider extends StorageProvider {
+class LocalStorageProvider extends BaseStorageProvider {
   constructor() {
     super();
     this.baseDir = path.join(__dirname, '../../uploads');

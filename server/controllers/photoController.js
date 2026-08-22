@@ -5,7 +5,7 @@ const fsPromises = require('fs').promises;
 const Photo = require('../models/Photo');
 const imageProcessor = require('../services/imageProcessor');
 const notificationService = require('../services/notificationService');
-const storageProvider = require('../storage/localStorageProvider');
+const storageProvider = require('../storage/storageProvider');
 const ActivityLog = require('../models/ActivityLog');
 const dbStore = require('../services/dbStore');
 
@@ -58,7 +58,7 @@ const uploadPhoto = async (req, res) => {
         width: processed.width,
         height: processed.height,
         hash: processed.hash,
-        storageProvider: 'local',
+        storageProvider: (processed.originalRelPath && processed.originalRelPath.startsWith('http')) ? 'cloudinary' : 'local',
         storagePaths: {
           original: processed.originalRelPath,
           medium: processed.mediumRelPath,
@@ -277,9 +277,18 @@ const serveMediaFile = async (req, res) => {
     if (type === 'medium') relPath = photo.storagePaths?.medium || photo.storagePaths?.original;
     if (type === 'original') relPath = photo.storagePaths?.original;
 
+    // Direct redirect if hosted on Cloudinary or external cloud
+    if (relPath && (relPath.startsWith('http://') || relPath.startsWith('https://'))) {
+      return res.redirect(302, relPath);
+    }
+
     let fullPath = null;
     if (relPath) {
       fullPath = await storageProvider.getFilePath(relPath);
+    }
+
+    if (fullPath && (fullPath.startsWith('http://') || fullPath.startsWith('https://'))) {
+      return res.redirect(302, fullPath);
     }
 
     if ((!fullPath || !fs.existsSync(fullPath)) && photo.storagePaths?.original) {

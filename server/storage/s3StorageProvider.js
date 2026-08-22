@@ -1,8 +1,8 @@
-const StorageProvider = require('./storageProvider');
+const BaseStorageProvider = require('./baseStorageProvider');
 const localStorageProvider = require('./localStorageProvider');
 const env = require('../config/env');
 
-class S3StorageProvider extends StorageProvider {
+class S3StorageProvider extends BaseStorageProvider {
   constructor() {
     super();
     this.name = 'AWS S3 / Cloudflare R2 / Backblaze B2';
