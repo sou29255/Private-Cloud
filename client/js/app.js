@@ -515,6 +515,18 @@ function initRealtimeEvents() {
       } catch (err) {}
     });
 
+    // Real-Time WebRTC Audio & Video Signaling (Offer/Answer/ICE)
+    evtSource.addEventListener('CALL_WEBRTC_SIGNAL', (e) => {
+      try {
+        const parsed = JSON.parse(e.data);
+        const signal = parsed.payload || parsed;
+        const currentU = (currentUser?.username || '').toLowerCase();
+        if ((signal.target || '').toLowerCase() === currentU) {
+          handleWebRTCSignalEvent(signal);
+        }
+      } catch (err) {}
+    });
+
     // Real-Time Message Request Listener
     evtSource.addEventListener('NEW_CHAT_REQUEST', (e) => {
       try {
@@ -6871,7 +6883,7 @@ async function respondToPendingRequest(requestId, fromUsername, status) {
 }
 
 // ==========================================================================
-// REAL-TIME CALLING SYSTEM (VOICE & VIDEO CALL OVERLAY & SIGNALING)
+// REAL-TIME WEBRTC CALLING SYSTEM (WHATSAPP-STYLE AUDIO & VIDEO CALL ENGINE)
 // ==========================================================================
 let activeCallId = null;
 let activeCallTarget = '';
@@ -6879,14 +6891,32 @@ let activeCallType = 'voice';
 let isCallInitiator = false;
 let activeCallTimer = null;
 let callDurationSeconds = 0;
-let localCameraStream = null;
+let localMediaStream = null;
+let remoteMediaStream = null;
+let peerConnection = null;
+let iceCandidatesQueue = [];
 let isCallMuted = false;
 let isCallVideoOff = false;
+let isSpeakerActive = true;
+let currentFacingMode = 'user'; // 'user' (front) or 'environment' (back)
 let incomingCallData = null;
 let outgoingCallTimeout = null;
 let ringtoneAudioContext = null;
 let ringtoneOscillators = [];
 let ringtoneTimer = null;
+
+// Standard Google & Public STUN Servers for Zero-Config NAT Traversal
+const rtcIceConfig = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
+    { urls: 'stun:stun3.l.google.com:19302' },
+    { urls: 'stun:stun4.l.google.com:19302' },
+    { urls: 'stun:global.stun.twilio.com:3478' }
+  ],
+  iceCandidatePoolSize: 10
+};
 
 // --- Web Audio Ringtone & Call Chimes ---
 function stopAllCallAudio() {
@@ -6994,6 +7024,206 @@ function playCallBeep(isConnect = true) {
   } catch (e) {}
 }
 
+// --- WebRTC Media & Peer Connection Setup ---
+async function acquireLocalMedia(isVideo = false) {
+  if (localMediaStream) {
+    return localMediaStream;
+  }
+
+  const constraints = {
+    audio: {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true
+    },
+    video: isVideo ? {
+      facingMode: currentFacingMode,
+      width: { ideal: 1280, max: 1920 },
+      height: { ideal: 720, max: 1080 }
+    } : false
+  };
+
+  try {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      localMediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+      
+      const localVid = document.getElementById('call-local-video');
+      if (localVid && isVideo) {
+        localVid.srcObject = localMediaStream;
+        try { await localVid.play(); } catch (e) {}
+      }
+      return localMediaStream;
+    }
+  } catch (err) {
+    console.warn('Microphone/Camera access warning:', err.message);
+    if (isVideo) {
+      // Fallback to audio only if camera is blocked or unavailable
+      try {
+        localMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        return localMediaStream;
+      } catch (e) {}
+    }
+  }
+  return null;
+}
+
+function createRTCPeerConnection(targetUsername, isVideo = false) {
+  if (peerConnection) {
+    try { peerConnection.close(); } catch (e) {}
+    peerConnection = null;
+  }
+
+  iceCandidatesQueue = [];
+  remoteMediaStream = new MediaStream();
+
+  const remoteVideo = document.getElementById('call-remote-video');
+  const remoteAudio = document.getElementById('call-remote-audio');
+  const placeholder = document.getElementById('call-remote-placeholder');
+
+  if (remoteVideo) {
+    remoteVideo.srcObject = remoteMediaStream;
+  }
+  if (remoteAudio) {
+    remoteAudio.srcObject = remoteMediaStream;
+    try { remoteAudio.play(); } catch (e) {}
+  }
+
+  try {
+    const pc = new RTCPeerConnection(rtcIceConfig);
+
+    // Add local tracks to peer connection
+    if (localMediaStream) {
+      localMediaStream.getTracks().forEach((track) => {
+        pc.addTrack(track, localMediaStream);
+      });
+    }
+
+    // ICE Candidate generation -> Send to remote peer via Signaling Relay
+    pc.onicecandidate = (event) => {
+      if (event.candidate && activeCallId && targetUsername) {
+        sendWebRTCSignal(targetUsername, {
+          type: 'candidate',
+          candidate: event.candidate
+        });
+      }
+    };
+
+    // Remote Track Received -> Attach to Remote Stream
+    pc.ontrack = (event) => {
+      if (event.streams && event.streams[0]) {
+        event.streams[0].getTracks().forEach((track) => {
+          if (!remoteMediaStream.getTracks().find(t => t.id === track.id)) {
+            remoteMediaStream.addTrack(track);
+          }
+        });
+      } else if (event.track) {
+        remoteMediaStream.addTrack(event.track);
+      }
+
+      if (remoteAudio) {
+        try { remoteAudio.play(); } catch (e) {}
+      }
+      if (remoteVideo && isVideo) {
+        try { remoteVideo.play(); } catch (e) {}
+        if (placeholder) placeholder.style.display = 'none';
+      }
+    };
+
+    // Connection State Observer
+    pc.onconnectionstatechange = () => {
+      const statusEl = document.getElementById('call-status-text');
+      if (pc.connectionState === 'connected') {
+        if (statusEl) statusEl.innerText = 'Connected • High Definition Secure Stream 🔒';
+      } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+        if (statusEl) statusEl.innerText = 'Reconnecting call...';
+      }
+    };
+
+    peerConnection = pc;
+    return pc;
+  } catch (err) {
+    console.error('RTCPeerConnection creation error:', err);
+    return null;
+  }
+}
+
+// Relay Signaling Message to Backend
+async function sendWebRTCSignal(targetUsername, signalData) {
+  if (!activeCallId || !targetUsername) return;
+  try {
+    await apiFetch('/api/messages/call/signal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        callId: activeCallId,
+        targetUsername,
+        signalData
+      })
+    });
+  } catch (err) {
+    console.warn('Signaling relay error:', err.message);
+  }
+}
+
+// Receive and Handle Remote WebRTC Signals (Offer / Answer / ICE Candidates)
+async function handleWebRTCSignalEvent(signal) {
+  if (!activeCallId || activeCallId !== signal.callId) return;
+  const { signalData, from } = signal;
+  if (!signalData) return;
+
+  try {
+    if (signalData.type === 'offer') {
+      // Recipient receives SDP Offer from Caller
+      const isVideo = (activeCallType === 'video');
+      await acquireLocalMedia(isVideo);
+      
+      const pc = peerConnection || createRTCPeerConnection(from, isVideo);
+      if (!pc) return;
+
+      await pc.setRemoteDescription(new RTCSessionDescription(signalData.sdp));
+
+      // Flush any queued ICE candidates
+      while (iceCandidatesQueue.length > 0) {
+        const cand = iceCandidatesQueue.shift();
+        try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch (e) {}
+      }
+
+      // Create Answer SDP & Relay back
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+
+      await sendWebRTCSignal(from, {
+        type: 'answer',
+        sdp: answer
+      });
+
+    } else if (signalData.type === 'answer') {
+      // Caller receives SDP Answer from Recipient
+      if (peerConnection) {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(signalData.sdp));
+
+        // Flush any queued ICE candidates
+        while (iceCandidatesQueue.length > 0) {
+          const cand = iceCandidatesQueue.shift();
+          try { await peerConnection.addIceCandidate(new RTCIceCandidate(cand)); } catch (e) {}
+        }
+      }
+
+    } else if (signalData.type === 'candidate' && signalData.candidate) {
+      // ICE Candidate Exchange
+      if (peerConnection && peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
+        try {
+          await peerConnection.addIceCandidate(new RTCIceCandidate(signalData.candidate));
+        } catch (e) {}
+      } else {
+        iceCandidatesQueue.push(signalData.candidate);
+      }
+    }
+  } catch (err) {
+    console.warn('WebRTC signal processing error:', err);
+  }
+}
+
 // --- Outgoing Call Initiation ---
 async function startVoiceCall(targetUsername) {
   const target = (targetUsername || activeChatUsername || activeProfileUsername || '').trim();
@@ -7019,6 +7249,7 @@ async function startVoiceCall(targetUsername) {
     activeCallTarget = target;
     activeCallType = 'voice';
     isCallInitiator = true;
+    currentFacingMode = 'user';
 
     playOutgoingDialTone();
     openModal('calling-modal');
@@ -7042,6 +7273,9 @@ async function startVoiceCall(targetUsername) {
       avatarCircle.innerText = (target.toLowerCase() === 'soumya') ? '👑' : ((target.toLowerCase() === 'sumana' || target.toLowerCase() === 'sumona') ? '👩‍🦰' : '👤');
     }
 
+    // Pre-acquire microphone
+    acquireLocalMedia(false).catch(() => {});
+
     // 35-Second Outgoing Ringing Timeout for Missed Call
     if (outgoingCallTimeout) clearTimeout(outgoingCallTimeout);
     outgoingCallTimeout = setTimeout(() => {
@@ -7062,7 +7296,7 @@ async function startVoiceCall(targetUsername) {
     }, 35000);
 
   } catch (err) {
-    showToast('Failed to start call.', 'error');
+    showToast('Failed to start voice call.', 'error');
   }
 }
 
@@ -7090,6 +7324,7 @@ async function startVideoCall(targetUsername) {
     activeCallTarget = target;
     activeCallType = 'video';
     isCallInitiator = true;
+    currentFacingMode = 'user';
 
     playOutgoingDialTone();
     openModal('calling-modal');
@@ -7098,28 +7333,20 @@ async function startVideoCall(targetUsername) {
     const statusEl = document.getElementById('call-status-text');
     const badgeEl = document.getElementById('call-type-badge');
     const videoContainer = document.getElementById('call-video-container');
-    const videoEl = document.getElementById('call-video-element');
     const avatarContainer = document.getElementById('call-avatar-container');
     const timerEl = document.getElementById('call-timer');
+    const remotePlaceholder = document.getElementById('call-remote-placeholder');
 
     if (nameEl) nameEl.innerText = `@${target}`;
     if (badgeEl) badgeEl.innerText = '📹 HD Cloud Video Call';
     if (statusEl) statusEl.innerText = `Connecting video with @${target}...`;
     if (videoContainer) videoContainer.style.display = 'block';
     if (avatarContainer) avatarContainer.style.display = 'none';
+    if (remotePlaceholder) remotePlaceholder.style.display = 'flex';
     if (timerEl) timerEl.innerText = '00:00';
 
-    // Request camera stream
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        localCameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        if (videoEl && localCameraStream) {
-          videoEl.srcObject = localCameraStream;
-        }
-      }
-    } catch (err) {
-      console.warn('Camera preview not active:', err.message);
-    }
+    // Start local camera preview immediately in floating PiP
+    await acquireLocalMedia(true);
 
     // 35-Second Outgoing Ringing Timeout for Missed Call
     if (outgoingCallTimeout) clearTimeout(outgoingCallTimeout);
@@ -7194,7 +7421,8 @@ function handleIncomingCallEvent(call) {
   if ('Notification' in window && Notification.permission === 'granted') {
     new Notification(`📞 Incoming Call from @${call.caller}!`, {
       body: `${call.callerDisplayName || call.caller} is calling you on Private Photo Cloud.`,
-      icon: './manifest.json'
+      icon: './manifest.json',
+      vibrate: [300, 100, 300, 100, 300, 100, 400]
     });
   }
 }
@@ -7218,6 +7446,7 @@ async function acceptIncomingCall() {
   activeCallTarget = call.caller;
   activeCallType = call.callType;
   isCallInitiator = false;
+  currentFacingMode = 'user';
 
   // Open calling overlay in connected state
   openModal('calling-modal');
@@ -7226,30 +7455,26 @@ async function acceptIncomingCall() {
   const statusEl = document.getElementById('call-status-text');
   const badgeEl = document.getElementById('call-type-badge');
   const videoContainer = document.getElementById('call-video-container');
-  const videoEl = document.getElementById('call-video-element');
   const avatarContainer = document.getElementById('call-avatar-container');
   const timerEl = document.getElementById('call-timer');
 
   if (nameEl) nameEl.innerText = `@${call.caller}`;
   if (badgeEl) badgeEl.innerText = (call.callType === 'video') ? '📹 HD Cloud Video Call' : '📞 Secure Cloud Voice Call';
-  if (statusEl) statusEl.innerText = 'Connected • High Definition Audio';
+  if (statusEl) statusEl.innerText = 'Connected • High Definition Audio/Video';
   if (timerEl) timerEl.innerText = '00:00';
 
-  if (call.callType === 'video') {
+  const isVideo = (call.callType === 'video');
+  if (isVideo) {
     if (videoContainer) videoContainer.style.display = 'block';
     if (avatarContainer) avatarContainer.style.display = 'none';
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        localCameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        if (videoEl && localCameraStream) {
-          videoEl.srcObject = localCameraStream;
-        }
-      }
-    } catch (e) {}
   } else {
     if (videoContainer) videoContainer.style.display = 'none';
     if (avatarContainer) avatarContainer.style.display = 'flex';
   }
+
+  // Acquire media & create PeerConnection
+  await acquireLocalMedia(isVideo);
+  createRTCPeerConnection(call.caller, isVideo);
 
   callDurationSeconds = 0;
   startCallTimer();
@@ -7301,7 +7526,7 @@ async function declineIncomingCall() {
 }
 
 // --- Call Response Handler (for Caller) ---
-function handleCallResponseEvent(resp) {
+async function handleCallResponseEvent(resp) {
   if (!activeCallId || activeCallId !== resp.callId) return;
 
   if (resp.action === 'ACCEPT') {
@@ -7310,11 +7535,34 @@ function handleCallResponseEvent(resp) {
     playCallBeep(true);
 
     const statusEl = document.getElementById('call-status-text');
-    if (statusEl) statusEl.innerText = 'Connected • High Definition Audio/Video 🔒';
+    if (statusEl) statusEl.innerText = 'Connected • Negotiating WebRTC Stream 🔒';
 
     callDurationSeconds = 0;
     startCallTimer();
     showToast(`Connected with @${resp.from}! 💖`, 'success');
+
+    // If caller, create SDP Offer and relay to recipient
+    try {
+      const isVideo = (activeCallType === 'video');
+      await acquireLocalMedia(isVideo);
+      const pc = createRTCPeerConnection(resp.from, isVideo);
+      
+      if (pc) {
+        const offer = await pc.createOffer({
+          offerToReceiveAudio: true,
+          offerToReceiveVideo: isVideo
+        });
+        await pc.setLocalDescription(offer);
+
+        await sendWebRTCSignal(resp.from, {
+          type: 'offer',
+          sdp: offer
+        });
+      }
+    } catch (err) {
+      console.warn('Caller WebRTC offer initiation error:', err);
+    }
+
   } else if (resp.action === 'REJECT') {
     stopAllCallAudio();
     if (outgoingCallTimeout) clearTimeout(outgoingCallTimeout);
@@ -7360,13 +7608,38 @@ function endCurrentCall(notifyServer = true) {
   activeCallId = null;
   activeCallTarget = '';
   callDurationSeconds = 0;
+  iceCandidatesQueue = [];
 
-  if (localCameraStream) {
+  // Close WebRTC Peer Connection
+  if (peerConnection) {
     try {
-      localCameraStream.getTracks().forEach(track => track.stop());
+      peerConnection.close();
     } catch (e) {}
-    localCameraStream = null;
+    peerConnection = null;
   }
+
+  // Stop local camera/microphone tracks
+  if (localMediaStream) {
+    try {
+      localMediaStream.getTracks().forEach(track => track.stop());
+    } catch (e) {}
+    localMediaStream = null;
+  }
+
+  // Reset remote media stream & elements
+  if (remoteMediaStream) {
+    try {
+      remoteMediaStream.getTracks().forEach(track => track.stop());
+    } catch (e) {}
+    remoteMediaStream = null;
+  }
+
+  const localVid = document.getElementById('call-local-video');
+  const remoteVid = document.getElementById('call-remote-video');
+  const remoteAud = document.getElementById('call-remote-audio');
+  if (localVid) localVid.srcObject = null;
+  if (remoteVid) remoteVid.srcObject = null;
+  if (remoteAud) remoteAud.srcObject = null;
 
   closeModal('calling-modal');
   const incomingModal = document.getElementById('incoming-call-modal');
@@ -7394,14 +7667,70 @@ function endCurrentCall(notifyServer = true) {
   }
 }
 
+// Flip Camera Facing Mode (Front / Back on Mobile Devices)
+async function flipCameraFacingMode() {
+  if (!localMediaStream || activeCallType !== 'video') {
+    showToast('Camera flip is only available in video calls.', 'info');
+    return;
+  }
+
+  currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+
+  try {
+    const newStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    });
+
+    const newVideoTrack = newStream.getVideoTracks()[0];
+    if (!newVideoTrack) return;
+
+    // Replace track on RTCPeerConnection
+    if (peerConnection) {
+      const senders = peerConnection.getSenders();
+      const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+      if (videoSender) {
+        await videoSender.replaceTrack(newVideoTrack);
+      }
+    }
+
+    // Stop old local video track
+    const oldVideoTrack = localMediaStream.getVideoTracks()[0];
+    if (oldVideoTrack) {
+      oldVideoTrack.stop();
+      localMediaStream.removeTrack(oldVideoTrack);
+    }
+    localMediaStream.addTrack(newVideoTrack);
+
+    // Update local video element
+    const localVid = document.getElementById('call-local-video');
+    if (localVid) {
+      localVid.srcObject = localMediaStream;
+      localVid.style.transform = currentFacingMode === 'user' ? 'scaleX(-1)' : 'none';
+    }
+
+    showToast(`Switched to ${currentFacingMode === 'user' ? 'Front' : 'Rear'} Camera 🔄`, 'info');
+  } catch (err) {
+    showToast('Failed to switch camera.', 'error');
+  }
+}
+
+// Toggle Local PiP Position (Top-Left / Bottom-Right)
+function togglePipPosition() {
+  const pip = document.getElementById('call-local-pip-container');
+  if (pip) {
+    pip.classList.toggle('pip-top-left');
+  }
+}
+
 function toggleCallMute() {
   isCallMuted = !isCallMuted;
   const btn = document.getElementById('call-mute-btn');
   const icon = document.getElementById('call-mute-icon');
   if (btn) btn.classList.toggle('active-muted', isCallMuted);
   if (icon) icon.innerText = isCallMuted ? '🔇' : '🎤';
-  if (localCameraStream) {
-    localCameraStream.getAudioTracks().forEach(t => t.enabled = !isCallMuted);
+  if (localMediaStream) {
+    localMediaStream.getAudioTracks().forEach(t => t.enabled = !isCallMuted);
   }
   showToast(isCallMuted ? 'Microphone Muted' : 'Microphone Unmuted', 'info');
 }
@@ -7412,15 +7741,45 @@ function toggleCallVideo() {
   const icon = document.getElementById('call-video-icon');
   if (btn) btn.classList.toggle('active-muted', isCallVideoOff);
   if (icon) icon.innerText = isCallVideoOff ? '🚫' : '📹';
-  if (localCameraStream) {
-    localCameraStream.getVideoTracks().forEach(t => t.enabled = !isCallVideoOff);
+  if (localMediaStream) {
+    localMediaStream.getVideoTracks().forEach(t => t.enabled = !isCallVideoOff);
   }
   showToast(isCallVideoOff ? 'Camera Turned Off' : 'Camera Active', 'info');
 }
 
 function toggleCallSpeaker() {
-  showToast('Audio routed to High-Definition Speakers 🔊', 'info');
+  isSpeakerActive = !isSpeakerActive;
+  const remoteAud = document.getElementById('call-remote-audio');
+  const remoteVid = document.getElementById('call-remote-video');
+  const icon = document.getElementById('call-speaker-icon');
+
+  if (remoteAud) remoteAud.volume = isSpeakerActive ? 1.0 : 0.2;
+  if (remoteVid) remoteVid.volume = isSpeakerActive ? 1.0 : 0.2;
+  if (icon) icon.innerText = isSpeakerActive ? '🔊' : '🔉';
+
+  showToast(isSpeakerActive ? 'Speaker Volume: 100% 🔊' : 'Speaker Volume: Low 🔉', 'info');
 }
+
+// Test Instant Mobile Push Notification via ntfy.sh
+async function testPhoneNotification() {
+  const targetUser = activeProfileUsername || currentUser?.username || 'Soumya';
+  try {
+    showToast('Sending instant test alert to phone... 📲', 'info');
+    const res = await apiFetch(`/api/users/profile/${encodeURIComponent(targetUser)}/test-ntfy`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message || 'Alert dispatched to +91 9239425276! Check phone 🔔✨', 'success');
+    } else {
+      showToast(data.error?.message || 'Failed to dispatch test notification.', 'error');
+    }
+  } catch (err) {
+    showToast('Error connecting to notification service.', 'error');
+  }
+}
+
 
 // ==========================================================================
 // INTERACTIVE BIRTHDAY CAKE, CANDLE EXTINGUISH & CONFETTI ENGINE

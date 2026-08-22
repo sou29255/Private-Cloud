@@ -458,6 +458,9 @@
                 <button type="button" id="ph-change-phone-btn" class="profile-action-pill secondary" onclick="openChangePhoneModal()" title="Change Mobile Number">
                   <span>📱</span> <span>Change Number</span>
                 </button>
+                <button type="button" id="ph-test-phone-btn" class="profile-action-pill festive" onclick="testPhoneNotification()" title="Send Instant Test Alert to Mobile via ntfy.sh">
+                  <span>🔔</span> <span>Test Phone Alert</span>
+                </button>
                 <button type="button" id="ph-edit-btn" class="profile-action-pill secondary" onclick="openEditProfileModal()">
                   <span>✏️</span> <span>Edit Profile</span>
                 </button>
@@ -1957,16 +1960,30 @@
     <div class="modal-card calling-container" onclick="event.stopPropagation()">
       <div class="call-particles-bg"></div>
 
+      <!-- Hidden Audio Player for Crystal-Clear Two-Way WebRTC Audio Stream -->
+      <audio id="call-remote-audio" autoplay playsinline></audio>
+
       <!-- Calling Top Header -->
       <div class="call-top-bar">
         <span id="call-type-badge" class="call-pill">📞 Secure Cloud Voice Call</span>
         <span id="call-timer" class="call-timer-text">00:00</span>
       </div>
 
-      <!-- Video Preview Screen (Active during Video Calls) -->
+      <!-- Video Call Screen (WhatsApp-style: Main Remote Video + Floating Local PiP) -->
       <div id="call-video-container" class="call-video-container" style="display:none;">
-        <video id="call-video-element" autoplay playsinline muted></video>
-        <div class="call-remote-tag" id="call-remote-name">📹 Live Video Stream</div>
+        <!-- Main Remote Video Stream (The person you are talking to) -->
+        <video id="call-remote-video" autoplay playsinline class="call-remote-video"></video>
+        <div id="call-remote-placeholder" class="call-remote-placeholder" style="display:none;">
+          <div class="call-placeholder-avatar" id="call-remote-placeholder-avatar">👤</div>
+          <span id="call-remote-placeholder-text">Camera Off</span>
+        </div>
+        <div class="call-remote-tag" id="call-remote-name">📹 Live Video</div>
+
+        <!-- Floating Local Camera PiP Thumbnail (Your own live camera) -->
+        <div id="call-local-pip-container" class="call-local-pip" onclick="togglePipPosition()" title="Click to reposition camera preview">
+          <video id="call-local-video" autoplay playsinline muted class="call-local-video"></video>
+          <div class="call-pip-tag">You</div>
+        </div>
       </div>
 
       <!-- Audio Avatar & Pulsing Wave (Active during Voice Calls) -->
@@ -1982,7 +1999,7 @@
         <p id="call-status-text" style="font-size:13px; color:var(--accent-cyan); animation:pulseGlow 2s infinite;">Ringing...</p>
       </div>
 
-      <!-- Interactive Call Action Buttons -->
+      <!-- Interactive Call Action Buttons (WhatsApp Style) -->
       <div class="call-controls-row">
         <button type="button" id="call-mute-btn" class="call-control-btn" onclick="toggleCallMute()" title="Mute Microphone">
           <span id="call-mute-icon">🎤</span>
@@ -1991,6 +2008,10 @@
         <button type="button" id="call-video-toggle-btn" class="call-control-btn" onclick="toggleCallVideo()" title="Toggle Camera">
           <span id="call-video-icon">📹</span>
           <span class="call-btn-lbl">Camera</span>
+        </button>
+        <button type="button" id="call-flip-cam-btn" class="call-control-btn" onclick="flipCameraFacingMode()" title="Flip Front / Back Camera">
+          <span id="call-flip-icon">🔄</span>
+          <span class="call-btn-lbl">Flip</span>
         </button>
         <button type="button" id="call-speaker-btn" class="call-control-btn" onclick="toggleCallSpeaker()" title="Speaker">
           <span id="call-speaker-icon">🔊</span>

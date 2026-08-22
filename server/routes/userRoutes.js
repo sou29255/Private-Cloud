@@ -12,7 +12,8 @@ const {
   toggleFollow,
   getFollowers,
   getFollowing,
-  changePhoneNumber
+  changePhoneNumber,
+  testNtfyNotification
 } = require('../controllers/userProfileController');
 
 // Optional auth helper to attach user if token present without blocking public visitors
@@ -53,6 +54,7 @@ router.get('/profile/:username/following', getFollowing);
 // Protected Profile Actions
 router.post('/profile/:username/update', protect, updateProfile);
 router.post('/profile/:username/change-phone', protect, changePhoneNumber);
+router.post('/profile/:username/test-ntfy', protect, testNtfyNotification);
 router.post('/profile/:username/avatar', protect, upload.single('avatar'), uploadAvatar);
 router.post('/profile/:username/follow', protect, toggleFollow);
 

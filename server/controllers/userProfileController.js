@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const notificationService = require('../services/notificationService');
 
 const getProfile = async (req, res) => {
   try {
@@ -346,10 +347,42 @@ const changePhoneNumber = async (req, res) => {
 
     dbStore.updateUserPhone(user.username, cleanPhone);
 
+    // Send confirmation push to newly updated number
+    try {
+      if (notificationService && typeof notificationService.sendTestNotification === 'function') {
+        notificationService.sendTestNotification({
+          username: user.displayName || user.username,
+          phoneNumber: cleanPhone
+        });
+      }
+    } catch (e) {}
+
     return res.json({
       success: true,
       phoneNumber: cleanPhone,
-      message: 'Phone number updated and saved permanently! 📱✨'
+      message: 'Phone number updated and test notification sent! 📱✨'
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: { message: err.message } });
+  }
+};
+
+const testNtfyNotification = async (req, res) => {
+  try {
+    const { username } = req.params;
+    const user = dbStore.getUser(username) || req.user;
+    const targetPhone = user?.phoneNumber || req.user?.phoneNumber || '9239425276';
+
+    const result = await notificationService.sendTestNotification({
+      username: user?.displayName || user?.username || 'Soumya',
+      phoneNumber: targetPhone
+    });
+
+    return res.json({
+      success: true,
+      message: `Test alert dispatched directly to +${result.phone}! Check your phone. 🔔✨`,
+      topic: result.topic,
+      phone: result.phone
     });
   } catch (err) {
     return res.status(500).json({ success: false, error: { message: err.message } });
@@ -363,5 +396,6 @@ module.exports = {
   toggleFollow,
   getFollowers,
   getFollowing,
-  changePhoneNumber
+  changePhoneNumber,
+  testNtfyNotification
 };

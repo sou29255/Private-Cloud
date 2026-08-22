@@ -201,7 +201,7 @@ class NotificationService {
 
   // 5. Rich Incoming / Missed Call Mobile Push Notification
   async sendCallNotification({ callerName, targetUser, callType = 'video', status = 'INCOMING' }) {
-    const rawPhone = (targetUser?.phoneNumber || env.ADMIN_PHONE_NUMBER || '9239425276').replace(/[^0-9]/g, '');
+    const rawPhone = (targetUser?.phoneNumber || (typeof targetUser === 'string' ? targetUser : '') || env.ADMIN_PHONE_NUMBER || '9239425276').replace(/[^0-9]/g, '');
     const typeLabel = callType === 'video' ? '📹 Video Call' : '📞 Voice Call';
     
     let title = `📞 Incoming ${typeLabel} from ${callerName}!`;
@@ -235,27 +235,57 @@ class NotificationService {
     return { success: true };
   }
 
+  // 6. Test Instant Phone Notification
+  async sendTestNotification({ username = 'Admin', phoneNumber }) {
+    const rawPhone = (phoneNumber || env.ADMIN_PHONE_NUMBER || '9239425276').replace(/[^0-9]/g, '');
+    const fullPhone = rawPhone.startsWith('91') ? rawPhone : `91${rawPhone}`;
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  // Guaranteed Instant Mobile Push via ntfy.sh
+    const title = `🔔 Instant Alert Active: +${fullPhone}`;
+    const message = `✨ Hello ${username}!\nYour Private Photo Cloud instant phone notifications are 100% active and connected to +${fullPhone} at ${timeStr}!\nCalls and upload alerts will arrive instantly here. 💖`;
+
+    console.log(`[ntfy Test] Dispatched to +${fullPhone} (topic: photo_cloud_alerts_${rawPhone})`);
+
+    const ntfyTopics = [`photo_cloud_alerts_${rawPhone}`, `cloud_${rawPhone}`];
+    for (const topic of ntfyTopics) {
+      await this.sendNtfyPush(topic, {
+        title,
+        message,
+        tags: ['tada', 'sparkles', 'bell', 'iphone'],
+        priority: '5'
+      });
+    }
+
+    return { success: true, topic: `photo_cloud_alerts_${rawPhone}`, phone: fullPhone };
+  }
+
+  // Guaranteed Instant Mobile Push via ntfy.sh (JSON Payload with UTF-8 & Emoji support)
   async sendNtfyPush(topic, { title, message, tags = [], priority = '5', attach = '' }) {
     try {
-      const cleanTitle = (title || 'Private Photo Cloud Alert').replace(/[^\x20-\x7E]/g, '').trim() || 'Photo Cloud Alert';
-      const cleanTags = tags.map(t => t.replace(/[^\x20-\x7E]/g, '')).filter(Boolean).join(',');
-
-      const headers = {
-        'Title': cleanTitle,
-        'Priority': '5',
-        'Click': 'http://localhost:5000'
+      const cleanTitle = (title || 'Private Photo Cloud Alert').trim();
+      const payload = {
+        topic,
+        title: cleanTitle,
+        message: message || '',
+        priority: parseInt(priority) || 5,
+        tags: tags.length ? tags : ['bell']
       };
-      if (cleanTags) headers['Tags'] = cleanTags;
-      if (attach) headers['Attach'] = attach;
+      if (attach) payload.attach = attach;
 
-      await fetch(`https://ntfy.sh/${topic}`, {
+      // Primary JSON POST
+      const res = await fetch('https://ntfy.sh', {
         method: 'POST',
-        headers,
-        body: message
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
       });
-      console.log(`[ntfy.sh] Rich alert dispatched to topic: ${topic}`);
+
+      if (res.ok) {
+        console.log(`[ntfy.sh] Rich alert successfully dispatched to topic: ${topic}`);
+      } else {
+        console.warn(`[ntfy.sh response]: ${res.status} ${res.statusText}`);
+      }
     } catch (err) {
       console.warn(`[ntfy.sh push note]:`, err.message);
     }
