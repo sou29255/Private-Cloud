@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: memora-cloud-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-5000}:5000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+    volumes:
+      # Persistent local storage volumes for media & user data
+      - ./uploads:/app/uploads
+      - ./music:/app/music
+      - ./photo:/app/photo
+      - ./server/data:/app/server/data
