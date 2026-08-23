@@ -47,7 +47,47 @@ function registerServiceWorker() {
     navigator.serviceWorker.register('./sw.js')
       .then(() => console.log('[PWA] Service Worker registered successfully'))
       .catch((err) => console.warn('[PWA] SW registration failed:', err));
+
+    // Handle background / lockscreen push notification action clicks
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      const data = event.data || {};
+      if (data.type === 'CALL_ANSWER_ACTION' && data.callId) {
+        incomingCallData = {
+          callId: data.callId,
+          caller: data.caller,
+          callType: data.callType || 'video'
+        };
+        acceptIncomingCall();
+      } else if (data.type === 'CALL_DECLINE_ACTION' && data.callId) {
+        incomingCallData = {
+          callId: data.callId,
+          caller: data.caller,
+          callType: data.callType || 'video'
+        };
+        declineIncomingCall();
+      }
+    });
   }
+
+  // Handle URL query action from notification click if opened in new tab
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'answer_call' && urlParams.get('callId')) {
+      const paramCallId = urlParams.get('callId');
+      const paramCaller = urlParams.get('caller') || '';
+      const paramCallType = urlParams.get('callType') || 'video';
+      setTimeout(() => {
+        incomingCallData = {
+          callId: paramCallId,
+          caller: paramCaller,
+          callType: paramCallType
+        };
+        acceptIncomingCall();
+        // Clean URL without reloading
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }, 800);
+    }
+  } catch (e) {}
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
@@ -6883,9 +6923,10 @@ async function respondToPendingRequest(requestId, fromUsername, status) {
 }
 
 // ==========================================================================
-// REAL-TIME WEBRTC CALLING SYSTEM (WHATSAPP-STYLE AUDIO & VIDEO CALL ENGINE)
+// REAL-TIME ZEGOCLOUD CALLING SYSTEM (HD VOICE & VIDEO CALL ENGINE)
 // ==========================================================================
 let activeCallId = null;
+let activeCallRoomId = '';
 let activeCallTarget = '';
 let activeCallType = 'voice';
 let isCallInitiator = false;
@@ -6893,8 +6934,7 @@ let activeCallTimer = null;
 let callDurationSeconds = 0;
 let localMediaStream = null;
 let remoteMediaStream = null;
-let peerConnection = null;
-let iceCandidatesQueue = [];
+let zegoInstance = null;
 let isCallMuted = false;
 let isCallVideoOff = false;
 let isSpeakerActive = true;
@@ -6904,19 +6944,6 @@ let outgoingCallTimeout = null;
 let ringtoneAudioContext = null;
 let ringtoneOscillators = [];
 let ringtoneTimer = null;
-
-// Standard Google & Public STUN Servers for Zero-Config NAT Traversal
-const rtcIceConfig = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' },
-    { urls: 'stun:global.stun.twilio.com:3478' }
-  ],
-  iceCandidatePoolSize: 10
-};
 
 // --- Web Audio Ringtone & Call Chimes ---
 function stopAllCallAudio() {
@@ -7024,7 +7051,7 @@ function playCallBeep(isConnect = true) {
   } catch (e) {}
 }
 
-// --- WebRTC Media & Peer Connection Setup ---
+// --- Local Media Acquisition & Permission Handling ---
 async function acquireLocalMedia(isVideo = false) {
   if (localMediaStream) {
     return localMediaStream;
@@ -7055,7 +7082,10 @@ async function acquireLocalMedia(isVideo = false) {
       return localMediaStream;
     }
   } catch (err) {
-    console.warn('Microphone/Camera access warning:', err.message);
+    console.warn('Microphone/Camera access note:', err.message);
+    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+      showToast('⚠️ Microphone/Camera access was blocked in browser settings. Please allow permission to talk.', 'warning', 6000);
+    }
     if (isVideo) {
       // Fallback to audio only if camera is blocked or unavailable
       try {
@@ -7067,164 +7097,76 @@ async function acquireLocalMedia(isVideo = false) {
   return null;
 }
 
-function createRTCPeerConnection(targetUsername, isVideo = false) {
-  if (peerConnection) {
-    try { peerConnection.close(); } catch (e) {}
-    peerConnection = null;
-  }
+// --- ZEGOCLOUD Room Connection & RTC Media Pipeline ---
+async function joinZegoCallRoom(roomId, targetUsername, callType = 'video') {
+  const isVideo = (callType === 'video');
+  const resolvedRoomId = roomId || activeCallRoomId || `zego_room_${Date.now()}`;
 
-  iceCandidatesQueue = [];
-  remoteMediaStream = new MediaStream();
-
-  const remoteVideo = document.getElementById('call-remote-video');
-  const remoteAudio = document.getElementById('call-remote-audio');
-  const placeholder = document.getElementById('call-remote-placeholder');
-
-  if (remoteVideo) {
-    remoteVideo.srcObject = remoteMediaStream;
-  }
-  if (remoteAudio) {
-    remoteAudio.srcObject = remoteMediaStream;
-    try { remoteAudio.play(); } catch (e) {}
-  }
+  // Acquire local media preview immediately
+  await acquireLocalMedia(isVideo);
 
   try {
-    const pc = new RTCPeerConnection(rtcIceConfig);
+    // Request signed token and configuration securely from backend
+    const res = await apiFetch(`/api/messages/call/zego-config?roomId=${encodeURIComponent(resolvedRoomId)}`);
+    const data = await res.json();
+    const config = data?.config;
 
-    // Add local tracks to peer connection
-    if (localMediaStream) {
-      localMediaStream.getTracks().forEach((track) => {
-        pc.addTrack(track, localMediaStream);
-      });
-    }
-
-    // ICE Candidate generation -> Send to remote peer via Signaling Relay
-    pc.onicecandidate = (event) => {
-      if (event.candidate && activeCallId && targetUsername) {
-        sendWebRTCSignal(targetUsername, {
-          type: 'candidate',
-          candidate: event.candidate
-        });
-      }
-    };
-
-    // Remote Track Received -> Attach to Remote Stream
-    pc.ontrack = (event) => {
-      if (event.streams && event.streams[0]) {
-        event.streams[0].getTracks().forEach((track) => {
-          if (!remoteMediaStream.getTracks().find(t => t.id === track.id)) {
-            remoteMediaStream.addTrack(track);
-          }
-        });
-      } else if (event.track) {
-        remoteMediaStream.addTrack(event.track);
-      }
-
-      if (remoteAudio) {
-        try { remoteAudio.play(); } catch (e) {}
-      }
-      if (remoteVideo && isVideo) {
-        try { remoteVideo.play(); } catch (e) {}
-        if (placeholder) placeholder.style.display = 'none';
-      }
-    };
-
-    // Connection State Observer
-    pc.onconnectionstatechange = () => {
-      const statusEl = document.getElementById('call-status-text');
-      if (pc.connectionState === 'connected') {
-        if (statusEl) statusEl.innerText = 'Connected • High Definition Secure Stream 🔒';
-      } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
-        if (statusEl) statusEl.innerText = 'Reconnecting call...';
-      }
-    };
-
-    peerConnection = pc;
-    return pc;
-  } catch (err) {
-    console.error('RTCPeerConnection creation error:', err);
-    return null;
-  }
-}
-
-// Relay Signaling Message to Backend
-async function sendWebRTCSignal(targetUsername, signalData) {
-  if (!activeCallId || !targetUsername) return;
-  try {
-    await apiFetch('/api/messages/call/signal', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        callId: activeCallId,
-        targetUsername,
-        signalData
-      })
-    });
-  } catch (err) {
-    console.warn('Signaling relay error:', err.message);
-  }
-}
-
-// Receive and Handle Remote WebRTC Signals (Offer / Answer / ICE Candidates)
-async function handleWebRTCSignalEvent(signal) {
-  if (!activeCallId || activeCallId !== signal.callId) return;
-  const { signalData, from } = signal;
-  if (!signalData) return;
-
-  try {
-    if (signalData.type === 'offer') {
-      // Recipient receives SDP Offer from Caller
-      const isVideo = (activeCallType === 'video');
-      await acquireLocalMedia(isVideo);
+    if (config && config.configured && config.token && window.ZegoUIKitPrebuilt) {
+      console.log('🚀 [ZEGOCLOUD] Initializing HD RTC Stream for Room:', resolvedRoomId);
       
-      const pc = peerConnection || createRTCPeerConnection(from, isVideo);
-      if (!pc) return;
+      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForProduction(
+        config.appId,
+        config.token,
+        config.roomId || resolvedRoomId,
+        config.userId,
+        config.userName
+      );
 
-      await pc.setRemoteDescription(new RTCSessionDescription(signalData.sdp));
+      const zp = ZegoUIKitPrebuilt.create(kitToken);
+      zegoInstance = zp;
 
-      // Flush any queued ICE candidates
-      while (iceCandidatesQueue.length > 0) {
-        const cand = iceCandidatesQueue.shift();
-        try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch (e) {}
-      }
-
-      // Create Answer SDP & Relay back
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-
-      await sendWebRTCSignal(from, {
-        type: 'answer',
-        sdp: answer
+      // Join room in clean one-to-one calling mode
+      zp.joinRoom({
+        container: document.querySelector('#call-video-container') || document.body,
+        scenario: {
+          mode: ZegoUIKitPrebuilt.OneONoneCall
+        },
+        showPreJoinView: false,
+        turnOnMicrophoneWhenJoining: true,
+        turnOnCameraWhenJoining: isVideo,
+        showMyCameraToggleButton: isVideo,
+        showMyMicrophoneToggleButton: true,
+        showAudioVideoSettingsButton: true,
+        showScreenSharingButton: false,
+        showTextChat: false,
+        showUserList: false,
+        maxUsers: 2,
+        layout: "Auto",
+        showLayoutButton: false,
+        onLeaveRoom: () => {
+          endCurrentCall(true);
+        },
+        onUserJoin: (users) => {
+          const statusEl = document.getElementById('call-status-text');
+          if (statusEl) statusEl.innerText = 'Connected • ZEGOCLOUD HD Secure Stream 🔒';
+          const placeholder = document.getElementById('call-remote-placeholder');
+          if (placeholder) placeholder.style.display = 'none';
+        },
+        onUserLeave: () => {
+          showToast(`@${targetUsername} left the call.`, 'info');
+          endCurrentCall(false);
+        }
       });
 
-    } else if (signalData.type === 'answer') {
-      // Caller receives SDP Answer from Recipient
-      if (peerConnection) {
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(signalData.sdp));
-
-        // Flush any queued ICE candidates
-        while (iceCandidatesQueue.length > 0) {
-          const cand = iceCandidatesQueue.shift();
-          try { await peerConnection.addIceCandidate(new RTCIceCandidate(cand)); } catch (e) {}
-        }
-      }
-
-    } else if (signalData.type === 'candidate' && signalData.candidate) {
-      // ICE Candidate Exchange
-      if (peerConnection && peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
-        try {
-          await peerConnection.addIceCandidate(new RTCIceCandidate(signalData.candidate));
-        } catch (e) {}
-      } else {
-        iceCandidatesQueue.push(signalData.candidate);
-      }
+    } else if (config && !config.configured) {
+      console.info('[ZEGOCLOUD] Note: ZEGO_APP_ID & ZEGO_SERVER_SECRET not set in .env. To enable live multi-network RTC, add credentials in .env.');
     }
   } catch (err) {
-    console.warn('WebRTC signal processing error:', err);
+    console.warn('[ZEGOCLOUD RTC error]:', err.message);
   }
 }
 
-// --- Outgoing Call Initiation ---
+// --- Outgoing Voice Call Initiation ---
 async function startVoiceCall(targetUsername) {
   const target = (targetUsername || activeChatUsername || activeProfileUsername || '').trim();
   if (!target) {
@@ -7246,6 +7188,7 @@ async function startVoiceCall(targetUsername) {
     }
 
     activeCallId = data.callId;
+    activeCallRoomId = data.roomId || `zego_room_${Date.now()}`;
     activeCallTarget = target;
     activeCallType = 'voice';
     isCallInitiator = true;
@@ -7300,6 +7243,7 @@ async function startVoiceCall(targetUsername) {
   }
 }
 
+// --- Outgoing Video Call Initiation ---
 async function startVideoCall(targetUsername) {
   const target = (targetUsername || activeChatUsername || activeProfileUsername || '').trim();
   if (!target) {
@@ -7321,6 +7265,7 @@ async function startVideoCall(targetUsername) {
     }
 
     activeCallId = data.callId;
+    activeCallRoomId = data.roomId || `zego_room_${Date.now()}`;
     activeCallTarget = target;
     activeCallType = 'video';
     isCallInitiator = true;
@@ -7392,7 +7337,13 @@ function handleIncomingCallEvent(call) {
   }
 
   incomingCallData = call;
+  activeCallRoomId = call.roomId || `zego_room_${Date.now()}`;
   playIncomingRingtone();
+
+  // Vibrate phone with standard phone ring pattern
+  if ('vibrate' in navigator) {
+    try { navigator.vibrate([300, 100, 300, 100, 300, 100, 400]); } catch (e) {}
+  }
 
   const modal = document.getElementById('incoming-call-modal');
   const avatarEl = document.getElementById('incoming-caller-avatar');
@@ -7417,17 +7368,20 @@ function handleIncomingCallEvent(call) {
     modal.style.display = 'flex';
   }
 
-  // Native phone notification
+  // Native phone push notification
   if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification(`📞 Incoming Call from @${call.caller}!`, {
-      body: `${call.callerDisplayName || call.caller} is calling you on Private Photo Cloud.`,
-      icon: './manifest.json',
-      vibrate: [300, 100, 300, 100, 300, 100, 400]
-    });
+    try {
+      new Notification(`📞 Incoming Call from @${call.caller}!`, {
+        body: `${call.callerDisplayName || call.caller} is calling you on Private Photo Cloud. Tap to answer!`,
+        icon: './images/favicon.png',
+        vibrate: [300, 100, 300, 100, 300, 100, 400],
+        tag: 'incoming-call'
+      });
+    } catch (e) {}
   }
 }
 
-// Accept Incoming Call
+// --- Accept Incoming Call ---
 async function acceptIncomingCall() {
   if (!incomingCallData) return;
   const call = incomingCallData;
@@ -7443,6 +7397,7 @@ async function acceptIncomingCall() {
   }
 
   activeCallId = call.callId;
+  activeCallRoomId = call.roomId || `zego_room_${Date.now()}`;
   activeCallTarget = call.caller;
   activeCallType = call.callType;
   isCallInitiator = false;
@@ -7472,10 +7427,6 @@ async function acceptIncomingCall() {
     if (avatarContainer) avatarContainer.style.display = 'flex';
   }
 
-  // Acquire media & create PeerConnection
-  await acquireLocalMedia(isVideo);
-  createRTCPeerConnection(call.caller, isVideo);
-
   callDurationSeconds = 0;
   startCallTimer();
 
@@ -7492,9 +7443,12 @@ async function acceptIncomingCall() {
       })
     });
   } catch (err) {}
+
+  // Join ZEGOCLOUD Calling Room
+  joinZegoCallRoom(call.roomId || activeCallRoomId, call.caller, call.callType);
 }
 
-// Decline Incoming Call
+// --- Decline Incoming Call ---
 async function declineIncomingCall() {
   if (!incomingCallData) return;
   const call = incomingCallData;
@@ -7535,33 +7489,14 @@ async function handleCallResponseEvent(resp) {
     playCallBeep(true);
 
     const statusEl = document.getElementById('call-status-text');
-    if (statusEl) statusEl.innerText = 'Connected • Negotiating WebRTC Stream 🔒';
+    if (statusEl) statusEl.innerText = 'Connected • High Definition Stream 🔒';
 
     callDurationSeconds = 0;
     startCallTimer();
     showToast(`Connected with @${resp.from}! 💖`, 'success');
 
-    // If caller, create SDP Offer and relay to recipient
-    try {
-      const isVideo = (activeCallType === 'video');
-      await acquireLocalMedia(isVideo);
-      const pc = createRTCPeerConnection(resp.from, isVideo);
-      
-      if (pc) {
-        const offer = await pc.createOffer({
-          offerToReceiveAudio: true,
-          offerToReceiveVideo: isVideo
-        });
-        await pc.setLocalDescription(offer);
-
-        await sendWebRTCSignal(resp.from, {
-          type: 'offer',
-          sdp: offer
-        });
-      }
-    } catch (err) {
-      console.warn('Caller WebRTC offer initiation error:', err);
-    }
+    // Join ZEGOCLOUD Calling Room
+    joinZegoCallRoom(resp.roomId || activeCallRoomId, resp.from, activeCallType);
 
   } else if (resp.action === 'REJECT') {
     stopAllCallAudio();
@@ -7606,19 +7541,20 @@ function endCurrentCall(notifyServer = true) {
   const dur = callDurationSeconds;
 
   activeCallId = null;
+  activeCallRoomId = '';
   activeCallTarget = '';
   callDurationSeconds = 0;
-  iceCandidatesQueue = [];
 
-  // Close WebRTC Peer Connection
-  if (peerConnection) {
+  // Leave / destroy ZEGOCLOUD instance cleanly
+  if (zegoInstance) {
     try {
-      peerConnection.close();
+      if (typeof zegoInstance.destroy === 'function') zegoInstance.destroy();
+      else if (typeof zegoInstance.leaveRoom === 'function') zegoInstance.leaveRoom();
     } catch (e) {}
-    peerConnection = null;
+    zegoInstance = null;
   }
 
-  // Stop local camera/microphone tracks
+  // Stop local camera/microphone media tracks
   if (localMediaStream) {
     try {
       localMediaStream.getTracks().forEach(track => track.stop());
@@ -7684,15 +7620,6 @@ async function flipCameraFacingMode() {
 
     const newVideoTrack = newStream.getVideoTracks()[0];
     if (!newVideoTrack) return;
-
-    // Replace track on RTCPeerConnection
-    if (peerConnection) {
-      const senders = peerConnection.getSenders();
-      const videoSender = senders.find(s => s.track && s.track.kind === 'video');
-      if (videoSender) {
-        await videoSender.replaceTrack(newVideoTrack);
-      }
-    }
 
     // Stop old local video track
     const oldVideoTrack = localMediaStream.getVideoTracks()[0];

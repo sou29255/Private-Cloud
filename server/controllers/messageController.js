@@ -207,6 +207,7 @@ const respondChatRequest = async (req, res) => {
 };
 
 const notificationService = require('../services/notificationService');
+const zegoService = require('../services/zegoService');
 
 const activeCalls = new Map(); // callId -> call record
 
@@ -216,6 +217,24 @@ function formatCallDuration(seconds) {
   if (mins === 0) return `${secs}s`;
   return `${mins}m ${secs}s`;
 }
+
+// Get ZEGOCLOUD Calling Configuration and Token
+const getZegoConfig = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || !user.username) {
+      return res.status(401).json({ success: false, error: { message: 'Authentication required.' } });
+    }
+    const { roomId } = req.query || {};
+    const config = zegoService.getZegoConfig(user, roomId);
+    return res.json({
+      success: true,
+      config
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: { message: err.message } });
+  }
+};
 
 // Initiate Audio or Video Call
 const initiateCall = async (req, res) => {
@@ -250,9 +269,11 @@ const initiateCall = async (req, res) => {
 
     const callerUser = dbStore.getUser(currentUsername) || req.user;
     const callId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+    const roomId = `zego_room_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
     
     const callRecord = {
       id: callId,
+      roomId,
       caller: currentUsername,
       callerDisplayName: callerUser.displayName || currentUsername,
       callerAvatar: callerUser.customAvatarUrl || callerUser.avatar || '👤',
@@ -271,6 +292,7 @@ const initiateCall = async (req, res) => {
       if (realtimeService && typeof realtimeService.broadcast === 'function') {
         realtimeService.broadcast('INCOMING_CALL', {
           callId,
+          roomId,
           caller: currentUsername,
           callerDisplayName: callerUser.displayName || currentUsername,
           callerAvatar: callerUser.customAvatarUrl || callerUser.avatar || '👤',
@@ -296,6 +318,7 @@ const initiateCall = async (req, res) => {
     return res.json({
       success: true,
       callId,
+      roomId,
       call: callRecord
     });
   } catch (err) {
@@ -316,6 +339,7 @@ const respondCall = async (req, res) => {
     const callRecord = activeCalls.get(callId);
     const resolvedTarget = targetUsername || (callRecord ? (callRecord.caller.toLowerCase() === currentUsername.toLowerCase() ? callRecord.target : callRecord.caller) : '');
     const resolvedType = callType || (callRecord ? callRecord.callType : 'video');
+    const roomId = callRecord ? callRecord.roomId : '';
 
     if (callRecord) {
       callRecord.status = action;
@@ -329,6 +353,7 @@ const respondCall = async (req, res) => {
       if (realtimeService && typeof realtimeService.broadcast === 'function') {
         realtimeService.broadcast('CALL_RESPONSE', {
           callId,
+          roomId,
           action,
           from: currentUsername,
           target: resolvedTarget,
@@ -479,6 +504,7 @@ module.exports = {
   sendChatRequest,
   respondChatRequest,
   getPendingRequests,
+  getZegoConfig,
   initiateCall,
   respondCall,
   signalWebRTC

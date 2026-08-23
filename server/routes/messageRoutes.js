@@ -8,6 +8,7 @@ const {
   sendChatRequest,
   respondChatRequest,
   getPendingRequests,
+  getZegoConfig,
   initiateCall,
   respondCall,
   signalWebRTC
@@ -20,7 +21,8 @@ router.get('/conversations', getConversationsList);
 router.get('/requests/pending', getPendingRequests);
 router.post('/requests/respond', respondChatRequest);
 
-// Real-time Audio & Video Calling Endpoints
+// Real-time Audio & Video Calling Endpoints (ZEGOCLOUD RTC & Call Invitations)
+router.get('/call/zego-config', getZegoConfig);
 router.post('/call/initiate', initiateCall);
 router.post('/call/respond', respondCall);
 router.post('/call/signal', signalWebRTC);

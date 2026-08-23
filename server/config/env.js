@@ -16,5 +16,7 @@ module.exports = {
   PUSHOVER_USER_KEY: process.env.PUSHOVER_USER_KEY || '',
   PUSHOVER_API_TOKEN: process.env.PUSHOVER_API_TOKEN || '',
   TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
-  TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID || ''
+  TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID || '',
+  ZEGO_APP_ID: process.env.ZEGO_APP_ID || process.env.ZEGOCLOUD_APP_ID || '',
+  ZEGO_SERVER_SECRET: process.env.ZEGO_SERVER_SECRET || process.env.ZEGOCLOUD_SERVER_SECRET || ''
 };

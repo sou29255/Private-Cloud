@@ -19,6 +19,7 @@
   "author": "Antigravity",
   "license": "MIT",
   "dependencies": {
+    "@zegocloud/zego-uikit-prebuilt": "^2.18.2",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.10.1",
     "compression": "^1.8.1",
