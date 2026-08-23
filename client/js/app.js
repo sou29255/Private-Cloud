@@ -669,35 +669,41 @@ function showToast(message, type = 'info') {
 // ==========================================================================
 async function checkAuth() {
   const isGatewayUnlocked = sessionStorage.getItem('vault_gateway_unlocked') === 'true';
+  const isProfileAuthenticated = sessionStorage.getItem('vault_profile_authenticated') === 'true';
 
   if (!isGatewayUnlocked) {
     showLoginStep1();
     return;
   }
 
-  try {
-    const headers = {};
-    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-    const res = await fetch(`${API_ORIGIN}/api/auth/me`, { credentials: 'include', headers });
-    const data = await res.json();
+  // If gateway is unlocked and profile was explicitly authenticated in this session, verify session
+  if (isProfileAuthenticated && authToken) {
+    try {
+      const headers = { 'Authorization': `Bearer ${authToken}` };
+      const res = await fetch(`${API_ORIGIN}/api/auth/me`, { credentials: 'include', headers });
+      const data = await res.json();
 
-    if (data.success && data.user) {
-      currentUser = data.user;
-      currentMemberFilter = currentUser.username || '';
-      updateUserProfileUI();
-      document.getElementById('login-view').style.display = 'none';
-      document.getElementById('app-view').style.display = 'flex';
-      initDashboard();
-    } else {
-      document.getElementById('login-view').style.display = 'flex';
-      document.getElementById('app-view').style.display = 'none';
-      document.getElementById('vault-step1-card').style.display = 'none';
-      document.getElementById('vault-step2-card').style.display = 'block';
-      loadAvailableProfiles();
-    }
-  } catch (err) {
-    showLoginStep1();
+      if (data.success && data.user) {
+        currentUser = data.user;
+        currentMemberFilter = currentUser.username || '';
+        updateUserProfileUI();
+        document.getElementById('login-view').style.display = 'none';
+        document.getElementById('app-view').style.display = 'flex';
+        initDashboard();
+        return;
+      }
+    } catch (err) {}
   }
+
+  // Gateway unlocked but no active profile session -> show Step 2 profile selection screen
+  document.getElementById('login-view').style.display = 'flex';
+  document.getElementById('app-view').style.display = 'none';
+  document.getElementById('vault-step1-card').style.display = 'none';
+  document.getElementById('vault-step2-card').style.display = 'block';
+  const passInput = document.getElementById('profile-login-password');
+  if (passInput) passInput.value = '';
+  loadAvailableProfiles();
+  if (typeof startThreeAnimation === 'function') startThreeAnimation();
 }
 
 function showLoginStep1() {
@@ -718,10 +724,18 @@ function backToStep1() {
 }
 
 function promptSwitchProfile() {
+  currentUser = null;
+  authToken = '';
+  sessionStorage.removeItem('vault_profile_authenticated');
+  localStorage.removeItem('vault_auth_token');
+  document.body.classList.remove('user-is-soumya', 'user-is-sumana');
+
   document.getElementById('login-view').style.display = 'flex';
   document.getElementById('app-view').style.display = 'none';
   document.getElementById('vault-step1-card').style.display = 'none';
   document.getElementById('vault-step2-card').style.display = 'block';
+  const passInput = document.getElementById('profile-login-password');
+  if (passInput) passInput.value = '';
   loadAvailableProfiles();
   if (typeof startThreeAnimation === 'function') startThreeAnimation();
 }
@@ -757,6 +771,7 @@ async function handleLogout() {
   document.body.classList.remove('user-is-soumya', 'user-is-sumana');
   localStorage.removeItem('vault_auth_token');
   sessionStorage.removeItem('vault_gateway_unlocked');
+  sessionStorage.removeItem('vault_profile_authenticated');
   sessionStorage.removeItem('pradhan_guide_shown_session');
   currentMemberFilter = '';
 
@@ -773,6 +788,9 @@ async function handleLogout() {
 
   if (typeof startThreeAnimation === 'function') startThreeAnimation();
   showToast('Logged out securely.', 'info');
+  if (typeof animateLogoutTransition === 'function') {
+    animateLogoutTransition();
+  }
   showLoginStep1();
 }
 
@@ -1008,6 +1026,7 @@ function setupAuthForms() {
         currentUser = data.user;
         authToken = data.token;
         currentMemberFilter = currentUser.username || '';
+        sessionStorage.setItem('vault_profile_authenticated', 'true');
         if (data.token) localStorage.setItem('vault_auth_token', data.token);
         updateUserProfileUI();
         showToast(`Welcome back, ${currentUser.displayName || currentUser.username}! 🌟`, 'success');
@@ -1090,6 +1109,7 @@ function setupAuthForms() {
         currentUser = data.user;
         authToken = data.token;
         currentMemberFilter = currentUser.username || '';
+        sessionStorage.setItem('vault_profile_authenticated', 'true');
         if (data.token) localStorage.setItem('vault_auth_token', data.token);
         updateUserProfileUI();
         playSuccessSound();
@@ -1250,24 +1270,6 @@ function selectAvatar(avatarEmoji, el) {
   selectedAvatar = avatarEmoji;
   document.querySelectorAll('.avatar-chip').forEach(c => c.classList.remove('active'));
   if (el) el.classList.add('active');
-}
-
-function promptSwitchProfile() {
-  if (confirm(`Currently logged in as ${currentUser?.displayName || currentUser?.username}. Switch profile?`)) {
-    handleLogout();
-  }
-}
-
-// Logout Handler
-async function handleLogout() {
-  try {
-    await fetch(`${API_ORIGIN}/api/auth/logout`, { method: 'POST', credentials: 'include' });
-  } catch (e) {}
-  currentUser = null;
-  currentMemberFilter = '';
-  if (typeof startThreeAnimation === 'function') startThreeAnimation();
-  showToast('Logged out securely.', 'info');
-  animateLogoutTransition();
 }
 
 // ==========================================================================
@@ -7110,6 +7112,32 @@ function playCallBeep(isConnect = true) {
 // --- Local Media Acquisition & Permission Handling ---
 async function acquireLocalMedia(isVideo = false) {
   if (localMediaStream) {
+    if (isVideo && localMediaStream.getVideoTracks().length === 0) {
+      try {
+        const vidStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: currentFacingMode,
+            width: { ideal: 1280, max: 1920 },
+            height: { ideal: 720, max: 1080 }
+          }
+        });
+        const newTrack = vidStream.getVideoTracks()[0];
+        if (newTrack) {
+          localMediaStream.addTrack(newTrack);
+          if (peerConnection) {
+            peerConnection.addTrack(newTrack, localMediaStream);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not add video track to existing stream:', e.message);
+      }
+    }
+    const localVid = document.getElementById('call-local-video');
+    if (localVid && isVideo) {
+      localVid.srcObject = localMediaStream;
+      localVid.muted = true;
+      try { await localVid.play(); } catch (e) {}
+    }
     return localMediaStream;
   }
 
@@ -7133,6 +7161,7 @@ async function acquireLocalMedia(isVideo = false) {
       const localVid = document.getElementById('call-local-video');
       if (localVid && isVideo) {
         localVid.srcObject = localMediaStream;
+        localVid.muted = true;
         try { await localVid.play(); } catch (e) {}
       }
       return localMediaStream;
@@ -7158,12 +7187,19 @@ async function acquireLocalMedia(isVideo = false) {
 // ==========================================================================
 const rtcIceConfig = {
   iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' }
-  ]
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302', 'stun:stun3.l.google.com:19302', 'stun:stun4.l.google.com:19302'] },
+    { urls: ['stun:stun.cloudflare.com:3478', 'stun:stun.services.mozilla.com'] },
+    {
+      urls: [
+        'turn:openrelay.metered.ca:80',
+        'turn:openrelay.metered.ca:443',
+        'turn:openrelay.metered.ca:443?transport=tcp'
+      ],
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    }
+  ],
+  iceCandidatePoolSize: 10
 };
 
 let rtcIceCandidatesQueue = [];
@@ -7178,6 +7214,16 @@ async function initPeerConnection(targetUsername, isVideo = true) {
 
     rtcIceCandidatesQueue = [];
     peerConnection = new RTCPeerConnection(rtcIceConfig);
+
+    // Initialize or reset remote media stream
+    if (!remoteMediaStream) {
+      remoteMediaStream = new MediaStream();
+    } else {
+      remoteMediaStream.getTracks().forEach(t => {
+        try { t.stop(); } catch(e) {}
+        remoteMediaStream.removeTrack(t);
+      });
+    }
 
     // Add local media tracks
     if (localMediaStream) {
@@ -7205,10 +7251,12 @@ async function initPeerConnection(targetUsername, isVideo = true) {
 
     // Remote Track Handler (Receives audio & video from the other person)
     peerConnection.ontrack = (event) => {
-      console.log('🎥 [WebRTC] Received remote stream track:', event.track.kind);
+      console.log('🎥 [WebRTC] Received remote stream track:', event.track.kind, event.track.id);
       
-      const remoteStream = event.streams[0] || new MediaStream([event.track]);
-      remoteMediaStream = remoteStream;
+      // Add track to remote stream if not already added
+      if (!remoteMediaStream.getTracks().some(t => t.id === event.track.id)) {
+        remoteMediaStream.addTrack(event.track);
+      }
 
       const remoteVid = document.getElementById('call-remote-video');
       const remoteAud = document.getElementById('call-remote-audio');
@@ -7216,14 +7264,29 @@ async function initPeerConnection(targetUsername, isVideo = true) {
       const statusEl = document.getElementById('call-status-text');
 
       if (remoteAud) {
-        remoteAud.srcObject = remoteStream;
-        try { remoteAud.play(); } catch (e) {}
+        if (remoteAud.srcObject !== remoteMediaStream) {
+          remoteAud.srcObject = remoteMediaStream;
+        }
+        remoteAud.muted = false;
+        try { remoteAud.play().catch(() => {}); } catch (e) {}
       }
 
-      if (remoteVid && isVideo) {
-        remoteVid.srcObject = remoteStream;
-        try { remoteVid.play(); } catch (e) {}
+      if (remoteVid) {
+        if (remoteVid.srcObject !== remoteMediaStream) {
+          remoteVid.srcObject = remoteMediaStream;
+        }
+        remoteVid.muted = false;
+        try { remoteVid.play().catch(() => {}); } catch (e) {}
+      }
+
+      if (event.track.kind === 'video') {
         if (placeholder) placeholder.style.display = 'none';
+        event.track.onunmute = () => {
+          if (placeholder) placeholder.style.display = 'none';
+        };
+        event.track.onmute = () => {
+          if (placeholder) placeholder.style.display = 'flex';
+        };
       }
 
       if (statusEl) {
@@ -7244,6 +7307,21 @@ async function initPeerConnection(targetUsername, isVideo = true) {
         }
       } else if (peerConnection.connectionState === 'failed') {
         if (statusEl) statusEl.innerText = 'Reconnecting RTC stream...';
+        if (isCallInitiator && peerConnection) {
+          peerConnection.createOffer({ iceRestart: true }).then(offer => {
+            return peerConnection.setLocalDescription(offer).then(() => {
+              return apiFetch('/api/messages/call/signal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  callId: activeCallId,
+                  targetUsername,
+                  signalData: { type: 'offer', sdp: offer }
+                })
+              });
+            });
+          }).catch(() => {});
+        }
       }
     };
 
@@ -7420,6 +7498,10 @@ async function startVoiceCall(targetUsername) {
     isCallInitiator = true;
     currentFacingMode = 'user';
 
+    // Prime audio elements on user click
+    const remoteAud = document.getElementById('call-remote-audio');
+    if (remoteAud) { try { remoteAud.play().catch(() => {}); } catch(e){} }
+
     playOutgoingDialTone();
     openModal('calling-modal');
 
@@ -7497,6 +7579,12 @@ async function startVideoCall(targetUsername) {
     isCallInitiator = true;
     currentFacingMode = 'user';
 
+    // Prime audio and video playback on user tap
+    const remoteAud = document.getElementById('call-remote-audio');
+    const remoteVid = document.getElementById('call-remote-video');
+    if (remoteAud) { try { remoteAud.play().catch(() => {}); } catch(e){} }
+    if (remoteVid) { try { remoteVid.play().catch(() => {}); } catch(e){} }
+
     playOutgoingDialTone();
     openModal('calling-modal');
 
@@ -7507,6 +7595,7 @@ async function startVideoCall(targetUsername) {
     const avatarContainer = document.getElementById('call-avatar-container');
     const timerEl = document.getElementById('call-timer');
     const remotePlaceholder = document.getElementById('call-remote-placeholder');
+    const placeholderAvatar = document.getElementById('call-remote-placeholder-avatar');
 
     if (nameEl) nameEl.innerText = `@${target}`;
     if (badgeEl) badgeEl.innerText = '📹 HD Cloud Video Call';
@@ -7514,6 +7603,9 @@ async function startVideoCall(targetUsername) {
     if (videoContainer) videoContainer.style.display = 'block';
     if (avatarContainer) avatarContainer.style.display = 'none';
     if (remotePlaceholder) remotePlaceholder.style.display = 'flex';
+    if (placeholderAvatar) {
+      placeholderAvatar.innerText = (target.toLowerCase() === 'soumya') ? '👑' : ((target.toLowerCase() === 'sumana' || target.toLowerCase() === 'sumona') ? '👩‍🦰' : '👤');
+    }
     if (timerEl) timerEl.innerText = '00:00';
 
     // Start local camera preview immediately in floating PiP
@@ -7616,6 +7708,12 @@ async function acceptIncomingCall() {
   stopAllCallAudio();
   playCallBeep(true);
 
+  // Prime audio and video playback on user click
+  const remoteAud = document.getElementById('call-remote-audio');
+  const remoteVid = document.getElementById('call-remote-video');
+  if (remoteAud) { try { remoteAud.play().catch(() => {}); } catch(e){} }
+  if (remoteVid) { try { remoteVid.play().catch(() => {}); } catch(e){} }
+
   const modal = document.getElementById('incoming-call-modal');
   if (modal) {
     modal.classList.remove('active');
@@ -7639,11 +7737,15 @@ async function acceptIncomingCall() {
   const avatarContainer = document.getElementById('call-avatar-container');
   const timerEl = document.getElementById('call-timer');
   const remotePlaceholder = document.getElementById('call-remote-placeholder');
+  const placeholderAvatar = document.getElementById('call-remote-placeholder-avatar');
 
   if (nameEl) nameEl.innerText = `@${call.caller}`;
   if (badgeEl) badgeEl.innerText = (call.callType === 'video') ? '📹 HD Cloud Video Call' : '📞 Secure Cloud Voice Call';
   if (statusEl) statusEl.innerText = 'Connecting audio & video stream...';
   if (timerEl) timerEl.innerText = '00:00';
+  if (placeholderAvatar) {
+    placeholderAvatar.innerText = (call.caller.toLowerCase() === 'soumya') ? '👑' : ((call.caller.toLowerCase() === 'sumana' || call.caller.toLowerCase() === 'sumona') ? '👩‍🦰' : '👤');
+  }
 
   const isVideo = (call.callType === 'video');
   if (isVideo) {
@@ -7794,7 +7896,9 @@ function endCurrentCall(notifyServer = true) {
   // Stop local camera/microphone media tracks
   if (localMediaStream) {
     try {
-      localMediaStream.getTracks().forEach(track => track.stop());
+      localMediaStream.getTracks().forEach(track => {
+        try { track.stop(); } catch(e) {}
+      });
     } catch (e) {}
     localMediaStream = null;
   }
@@ -7802,7 +7906,9 @@ function endCurrentCall(notifyServer = true) {
   // Reset remote media stream & elements
   if (remoteMediaStream) {
     try {
-      remoteMediaStream.getTracks().forEach(track => track.stop());
+      remoteMediaStream.getTracks().forEach(track => {
+        try { track.stop(); } catch(e) {}
+      });
     } catch (e) {}
     remoteMediaStream = null;
   }
@@ -7813,6 +7919,21 @@ function endCurrentCall(notifyServer = true) {
   if (localVid) localVid.srcObject = null;
   if (remoteVid) remoteVid.srcObject = null;
   if (remoteAud) remoteAud.srcObject = null;
+
+  // Reset mute and video controls UI
+  isCallMuted = false;
+  isCallVideoOff = false;
+  const muteBtn = document.getElementById('call-mute-btn');
+  const muteIcon = document.getElementById('call-mute-icon');
+  const vidBtn = document.getElementById('call-video-toggle-btn');
+  const vidIcon = document.getElementById('call-video-icon');
+  if (muteBtn) muteBtn.classList.remove('active-muted');
+  if (muteIcon) muteIcon.innerText = '🎤';
+  if (vidBtn) vidBtn.classList.remove('active-muted');
+  if (vidIcon) vidIcon.innerText = '📹';
+
+  const timerEl = document.getElementById('call-timer');
+  if (timerEl) timerEl.innerText = '00:00';
 
   closeModal('calling-modal');
   const incomingModal = document.getElementById('incoming-call-modal');
@@ -7839,6 +7960,22 @@ function endCurrentCall(notifyServer = true) {
     pollDirectMessages(activeChatUsername);
   }
 }
+
+// Graceful beforeunload cleanup if page is reloaded or closed during a call
+window.addEventListener('beforeunload', () => {
+  if (activeCallId && activeCallTarget) {
+    const payload = JSON.stringify({
+      callId: activeCallId,
+      action: 'END',
+      targetUsername: activeCallTarget,
+      callType: activeCallType,
+      durationSeconds: callDurationSeconds
+    });
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(`${API_ORIGIN}/api/messages/call/respond`, new Blob([payload], { type: 'application/json' }));
+    }
+  }
+});
 
 // Flip Camera Facing Mode (Front / Back on Mobile Devices)
 async function flipCameraFacingMode() {
