@@ -1119,7 +1119,9 @@ function skipToStep2Signup() {
   toggleRegisterMode(true);
 }
 
-// Load ONLY Soumya & Sumana for Quick Selection in Step 2
+let isSecretVipProfileRevealed = false;
+
+// Load ONLY Soumya by default, and keep Sumana hidden until secret trigger clicked
 async function loadAvailableProfiles() {
   const container = document.getElementById('quick-profiles-grid');
   if (!container) return;
@@ -1137,17 +1139,71 @@ async function loadAvailableProfiles() {
         const isSoumya = (p.username.toLowerCase() === 'soumya');
         const icon = isSoumya ? '👑' : '👩‍🦰';
         const roleText = isSoumya ? '👑 Head Admin' : '💖 Protected VIP';
+        const isHidden = !isSoumya && !isSecretVipProfileRevealed;
 
         return `
-          <div class="quick-profile-card" id="card-profile-${p.username.toLowerCase()}" onclick="selectQuickProfile('${p.username}', '${p.displayName}')">
+          <div class="quick-profile-card ${isSoumya ? 'selected' : ''}" 
+               id="card-profile-${p.username.toLowerCase()}" 
+               onclick="selectQuickProfile('${p.username}', '${p.displayName}')"
+               style="${isHidden ? 'display:none; opacity:0;' : 'display:block; opacity:1; animation:fadeInCard 0.35s ease forwards;'}">
             <div style="font-size:30px; margin-bottom:6px;">${icon}</div>
             <div style="font-weight:800; font-size:14px; color:var(--text-primary);">${p.displayName || p.username}</div>
             <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${roleText}</div>
           </div>
         `;
       }).join('');
+
+      if (isSecretVipProfileRevealed) {
+        container.style.gridTemplateColumns = 'repeat(2, 1fr)';
+      } else {
+        container.style.gridTemplateColumns = '1fr';
+        // Auto-select Soumya
+        const userInput = document.getElementById('profile-login-username');
+        if (userInput && (!userInput.value || userInput.value.toLowerCase() === 'soumya')) {
+          userInput.value = 'Soumya';
+        }
+      }
     }
   } catch (e) {}
+}
+
+function toggleSecretVipProfile() {
+  isSecretVipProfileRevealed = !isSecretVipProfileRevealed;
+  playNavSound();
+
+  const triggerBtn = document.getElementById('btn-secret-vip-reveal');
+  const sumanaCard = document.getElementById('card-profile-sumana') || document.getElementById('card-profile-sumona');
+  const grid = document.getElementById('quick-profiles-grid');
+
+  if (isSecretVipProfileRevealed) {
+    if (triggerBtn) {
+      triggerBtn.innerHTML = '💖';
+      triggerBtn.style.color = '#ff4081';
+      triggerBtn.style.filter = 'drop-shadow(0 0 8px rgba(255,64,129,0.8))';
+    }
+    if (grid) grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+    if (sumanaCard) {
+      sumanaCard.style.display = 'block';
+      setTimeout(() => {
+        sumanaCard.style.opacity = '1';
+        sumanaCard.style.animation = 'scaleUpSumana 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+      }, 30);
+    }
+    showToast('Secret VIP profile unlocked ✨', 'success');
+  } else {
+    if (triggerBtn) {
+      triggerBtn.innerHTML = '🔒';
+      triggerBtn.style.color = 'rgba(255,255,255,0.3)';
+      triggerBtn.style.filter = 'none';
+    }
+    if (sumanaCard) {
+      sumanaCard.style.opacity = '0';
+      sumanaCard.style.display = 'none';
+    }
+    if (grid) grid.style.gridTemplateColumns = '1fr';
+    // Re-select Soumya
+    selectQuickProfile('Soumya', 'Soumya (Head Admin)');
+  }
 }
 
 function selectQuickProfile(username, displayName) {

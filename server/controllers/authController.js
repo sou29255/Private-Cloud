@@ -66,7 +66,9 @@ const vaultAccess = async (req, res) => {
 
   const isMasterMatch = (
     cleanPassword === env.ADMIN_PASSWORD ||
-    cleanPassword.toLowerCase() === env.ADMIN_PASSWORD.toLowerCase() ||
+    cleanPassword.toLowerCase() === (env.ADMIN_PASSWORD || '').toLowerCase() ||
+    cleanPassword === 'Sumana143' ||
+    cleanPassword.toLowerCase() === 'sumana143' ||
     cleanPassword === 'Soumya@2007' ||
     cleanPassword.toLowerCase() === 'soumya@2007' ||
     cleanPassword === 'Soumya@2007sp' ||
@@ -153,7 +155,13 @@ const profileLogin = async (req, res) => {
       cleanPassword.toLowerCase() === 'soumya@2007sp' ||
       cleanPassword === 'Soumya@2007' ||
       cleanPassword.toLowerCase() === 'soumya@2007' ||
-      cleanPassword === env.ADMIN_PASSWORD
+      cleanPassword === 'Sumana143' ||
+      cleanPassword.toLowerCase() === 'sumana143' ||
+      cleanPassword === 'soumya143' ||
+      cleanPassword.toLowerCase() === 'soumya143' ||
+      cleanPassword === '143' ||
+      cleanPassword === env.ADMIN_PASSWORD ||
+      cleanPassword.toLowerCase() === (env.ADMIN_PASSWORD || '').toLowerCase()
     );
     if (isSoumyaPass) {
       userObj = {
@@ -171,9 +179,12 @@ const profileLogin = async (req, res) => {
       cleanPassword === 'Soumya143' ||
       cleanPassword === 'Sumana143' ||
       cleanPassword.toLowerCase() === 'sumana143' ||
+      cleanPassword === 'Soumya@2007sp' ||
+      cleanPassword.toLowerCase() === 'soumya@2007sp' ||
       cleanPassword.toLowerCase() === 'one four three' ||
       cleanPassword.toLowerCase() === 'onefourthree' ||
-      cleanPassword === env.ADMIN_PASSWORD
+      cleanPassword === env.ADMIN_PASSWORD ||
+      cleanPassword.toLowerCase() === (env.ADMIN_PASSWORD || '').toLowerCase()
     );
     if (isSumanaPass) {
       userObj = {

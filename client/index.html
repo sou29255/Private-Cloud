@@ -76,11 +76,16 @@
         <button type="button" id="tab-btn-signup" class="btn-auth-tab" onclick="toggleRegisterMode(true)">✨ Sign Up</button>
       </div>
 
-      <!-- Quick Profiles List (Soumya and Sumana ONLY) -->
+      <!-- Quick Profiles List (Soumya by default, Sumana hidden under secret trigger) -->
       <div id="quick-profiles-container" style="margin-bottom:18px;">
-        <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; text-align:left;">Select Account:</div>
-        <div id="quick-profiles-grid" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px;">
-          <!-- Dynamically populated with ONLY Soumya and Sumana -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; text-align:left;">Select Account:</div>
+          <button type="button" id="btn-secret-vip-reveal" class="secret-vip-trigger" onclick="toggleSecretVipProfile()" title="Secret Access" style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:15px; cursor:pointer; padding:2px 6px; border-radius:50%; transition:all 0.3s ease;">
+            🔒
+          </button>
+        </div>
+        <div id="quick-profiles-grid" class="quick-profiles-grid-layout" style="display:grid; grid-template-columns:1fr; gap:10px; transition:all 0.35s ease;">
+          <!-- Dynamically populated -->
         </div>
       </div>
 
