@@ -351,7 +351,7 @@
     }
   }
 
-  // Attach zero-resistance touch and mouse swipe engine to the selector bar
+  // Attach smooth touch and mouse slide engine to the selector bar
   function initBarSwipeEngine(bar) {
     if (!bar || bar._swipeAttached) return;
     bar._swipeAttached = true;
@@ -361,35 +361,7 @@
     let scrollLeft = 0;
     let isDragging = false;
 
-    // Touch events for mobile phones & tablets
-    bar.addEventListener('touchstart', (e) => {
-      isDown = true;
-      isDragging = false;
-      startX = e.touches[0].pageX - bar.offsetLeft;
-      scrollLeft = bar.scrollLeft;
-    }, { passive: true });
-
-    bar.addEventListener('touchmove', (e) => {
-      if (!isDown) return;
-      const x = e.touches[0].pageX - bar.offsetLeft;
-      const walk = (x - startX);
-      if (Math.abs(walk) > 5) {
-        isDragging = true;
-      }
-      bar.scrollLeft = scrollLeft - walk;
-    }, { passive: true });
-
-    bar.addEventListener('touchend', () => {
-      isDown = false;
-      setTimeout(() => { isDragging = false; }, 60);
-    }, { passive: true });
-
-    bar.addEventListener('touchcancel', () => {
-      isDown = false;
-      isDragging = false;
-    }, { passive: true });
-
-    // Mouse drag events for desktop & testing
+    // Mouse drag events for desktop & laptops
     bar.addEventListener('mousedown', (e) => {
       isDown = true;
       isDragging = false;
@@ -411,13 +383,21 @@
       e.preventDefault();
       const x = e.pageX - bar.offsetLeft;
       const walk = (x - startX) * 1.3;
-      if (Math.abs(walk) > 5) {
+      if (Math.abs(walk) > 4) {
         isDragging = true;
       }
       bar.scrollLeft = scrollLeft - walk;
     });
 
-    // Delegate chip clicks so they don't fire during drag/swipe
+    // Horizontal wheel support
+    bar.addEventListener('wheel', (e) => {
+      if (e.deltaY !== 0 && !e.deltaX) {
+        e.preventDefault();
+        bar.scrollLeft += e.deltaY;
+      }
+    }, { passive: false });
+
+    // Delegate chip clicks: activate effect & smooth scroll selected chip into center
     bar.addEventListener('click', (e) => {
       if (isDragging) {
         e.preventDefault();
@@ -427,6 +407,9 @@
       const chip = e.target.closest('.fav-fx-chip');
       if (chip && chip.dataset.fx) {
         setActiveEffect(chip.dataset.fx);
+        try {
+          chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        } catch (_) {}
       }
     });
   }

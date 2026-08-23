@@ -722,21 +722,22 @@
             </div>
 
             <!-- Favorites Unlocked Toolbar (Shown after heart shatters) -->
-            <div id="favorites-unlocked-toolbar" class="favorites-unlocked-toolbar" style="display:none; flex-direction:column; gap:12px; align-items:stretch;">
-              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                  <span style="font-size:22px; filter:drop-shadow(0 0 8px #ff4081);">💖</span>
-                  <div>
-                    <h3 style="font-size:16px; font-weight:800; margin:0; color:#fff;">Favorite Memories Collection</h3>
-                    <p style="font-size:11px; color:var(--text-muted); margin:2px 0 0 0;" id="favorites-count-label">Unlocked photos</p>
+            <div id="favorites-unlocked-toolbar" class="favorites-unlocked-toolbar" style="display:none;">
+              <div class="fav-toolbar-header">
+                <div class="fav-toolbar-info">
+                  <span class="fav-toolbar-icon">💖</span>
+                  <div class="fav-toolbar-text">
+                    <h3 class="fav-toolbar-title">Favorite Memories Collection</h3>
+                    <p class="fav-toolbar-subtitle" id="favorites-count-label">0 Loved Memory Photos Unlocked 💖</p>
                   </div>
                 </div>
-                <button type="button" class="btn-primary-3d" onclick="relockFavoritesHeart()" style="background:linear-gradient(135deg, #ff4081, #7c4dff); font-size:12px; padding:8px 16px; border-radius:12px; display:inline-flex; align-items:center; gap:6px;">
-                  <span>💔</span> <span>Relive Heart Shatter Animation</span>
+                <button type="button" class="fav-relock-btn" onclick="relockFavoritesHeart()" title="Relive Heart Shatter Animation">
+                  <span class="fav-relock-icon">💔</span>
+                  <span class="fav-relock-text">Relive Heart</span>
                 </button>
               </div>
               <!-- 7 Cinematic Animation Effects Switcher Bar -->
-              <div id="favorites-fx-selector-container"></div>
+              <div id="favorites-fx-selector-container" class="favorites-fx-selector-container"></div>
             </div>
           </div>
 
