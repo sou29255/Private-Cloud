@@ -774,10 +774,18 @@ async function handleLogout() {
   sessionStorage.removeItem('vault_profile_authenticated');
   sessionStorage.removeItem('pradhan_guide_shown_session');
   currentMemberFilter = '';
+  currentView = 'photos';
 
-  // Completely reset & purge AI Chatbot history for fresh ephemeral session
+  // Close any open modals and sidebar
+  document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+  const sidebar = document.getElementById('main-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (sidebar) sidebar.classList.remove('open');
+  if (backdrop) backdrop.classList.remove('active');
+
+  // Completely reset & purge AI Chatbot history silently for fresh session
   if (typeof clearChatHistory === 'function') {
-    clearChatHistory();
+    clearChatHistory(true);
   }
   if (typeof endCurrentCall === 'function') {
     endCurrentCall();
@@ -787,11 +795,12 @@ async function handleLogout() {
   }
 
   if (typeof startThreeAnimation === 'function') startThreeAnimation();
-  showToast('Logged out securely.', 'info');
+  showToast('Logged out securely. 👋', 'info');
   if (typeof animateLogoutTransition === 'function') {
     animateLogoutTransition();
+  } else {
+    showLoginStep1();
   }
-  showLoginStep1();
 }
 
 function updateHeroGreeting() {
@@ -2905,6 +2914,11 @@ function renderProfileHub(data) {
   const messageBtn = document.getElementById('ph-message-btn');
   if (messageBtn) {
     messageBtn.style.display = isOwner ? 'none' : 'inline-flex';
+  }
+
+  const logoutBtn = document.getElementById('ph-logout-btn');
+  if (logoutBtn) {
+    logoutBtn.style.display = isOwner ? 'inline-flex' : 'none';
   }
 
   if (privacyToggleBtn) {
@@ -5929,7 +5943,7 @@ function closeChatbot() {
   playModalCloseSound();
 }
 
-function clearChatHistory() {
+function clearChatHistory(silent = false) {
   const body = document.getElementById('ai-messages-body');
   if (!body) return;
   body.innerHTML = `
@@ -5944,7 +5958,9 @@ function clearChatHistory() {
       </div>
     </div>
   `;
-  showToast('Chat history cleared.', 'info');
+  if (!silent) {
+    showToast('Chat history cleared.', 'info');
+  }
 }
 
 function handleAiChatSubmit(e) {

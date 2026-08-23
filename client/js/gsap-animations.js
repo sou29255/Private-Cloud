@@ -33,16 +33,31 @@ function animateLogoutTransition() {
     gsap.to('#app-view', {
       opacity: 0,
       scale: 0.95,
-      duration: 0.4,
+      duration: 0.3,
       onComplete: () => {
-        document.getElementById('app-view').style.display = 'none';
-        const loginView = document.getElementById('login-view');
-        loginView.style.display = 'flex';
-        gsap.fromTo('.login-card', { opacity: 0, y: 50, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.5 });
+        const appView = document.getElementById('app-view');
+        if (appView) {
+          appView.style.display = 'none';
+          appView.style.opacity = '1';
+          appView.style.transform = 'none';
+        }
+        if (typeof showLoginStep1 === 'function') {
+          showLoginStep1();
+        } else {
+          const loginView = document.getElementById('login-view');
+          if (loginView) loginView.style.display = 'flex';
+        }
+        gsap.fromTo('.login-card', { opacity: 0, y: 30, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, clearProps: 'transform,scale' });
       }
     });
   } else {
-    document.getElementById('app-view').style.display = 'none';
-    document.getElementById('login-view').style.display = 'flex';
+    if (typeof showLoginStep1 === 'function') {
+      showLoginStep1();
+    } else {
+      const appView = document.getElementById('app-view');
+      if (appView) appView.style.display = 'none';
+      const loginView = document.getElementById('login-view');
+      if (loginView) loginView.style.display = 'flex';
+    }
   }
 }
