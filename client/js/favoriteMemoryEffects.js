@@ -329,11 +329,17 @@
     currentActiveEffect = effectId;
     localStorage.setItem('fav_active_effect', effectId);
 
-    // Update UI chips
+    // Update UI chips & scroll active into view
     const chips = document.querySelectorAll('.fav-fx-chip');
     chips.forEach(c => {
-      if (c.dataset.fx === effectId) c.classList.add('active');
-      else c.classList.remove('active');
+      if (c.dataset.fx === effectId) {
+        c.classList.add('active');
+        try {
+          c.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        } catch (e) {}
+      } else {
+        c.classList.remove('active');
+      }
     });
 
     // Animate across ALL visible photo cards in the gallery
@@ -343,6 +349,86 @@
       const cfg = EFFECTS_CONFIG.find(e => e.id === effectId);
       window.showToast(`Applied ${cfg ? cfg.name : effectId} to all memories! 💖✨`, 'info');
     }
+  }
+
+  // Attach zero-resistance touch and mouse swipe engine to the selector bar
+  function initBarSwipeEngine(bar) {
+    if (!bar || bar._swipeAttached) return;
+    bar._swipeAttached = true;
+
+    let isDown = false;
+    let startX = 0;
+    let scrollLeft = 0;
+    let isDragging = false;
+
+    // Touch events for mobile phones & tablets
+    bar.addEventListener('touchstart', (e) => {
+      isDown = true;
+      isDragging = false;
+      startX = e.touches[0].pageX - bar.offsetLeft;
+      scrollLeft = bar.scrollLeft;
+    }, { passive: true });
+
+    bar.addEventListener('touchmove', (e) => {
+      if (!isDown) return;
+      const x = e.touches[0].pageX - bar.offsetLeft;
+      const walk = (x - startX);
+      if (Math.abs(walk) > 5) {
+        isDragging = true;
+      }
+      bar.scrollLeft = scrollLeft - walk;
+    }, { passive: true });
+
+    bar.addEventListener('touchend', () => {
+      isDown = false;
+      setTimeout(() => { isDragging = false; }, 60);
+    }, { passive: true });
+
+    bar.addEventListener('touchcancel', () => {
+      isDown = false;
+      isDragging = false;
+    }, { passive: true });
+
+    // Mouse drag events for desktop & testing
+    bar.addEventListener('mousedown', (e) => {
+      isDown = true;
+      isDragging = false;
+      startX = e.pageX - bar.offsetLeft;
+      scrollLeft = bar.scrollLeft;
+    });
+
+    bar.addEventListener('mouseleave', () => {
+      isDown = false;
+    });
+
+    bar.addEventListener('mouseup', () => {
+      isDown = false;
+      setTimeout(() => { isDragging = false; }, 60);
+    });
+
+    bar.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - bar.offsetLeft;
+      const walk = (x - startX) * 1.3;
+      if (Math.abs(walk) > 5) {
+        isDragging = true;
+      }
+      bar.scrollLeft = scrollLeft - walk;
+    });
+
+    // Delegate chip clicks so they don't fire during drag/swipe
+    bar.addEventListener('click', (e) => {
+      if (isDragging) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      const chip = e.target.closest('.fav-fx-chip');
+      if (chip && chip.dataset.fx) {
+        setActiveEffect(chip.dataset.fx);
+      }
+    });
   }
 
   // Render the interactive effect switcher toolbar
@@ -357,10 +443,12 @@
     }
 
     bar.innerHTML = EFFECTS_CONFIG.map(e => `
-      <button type="button" class="fav-fx-chip ${currentActiveEffect === e.id ? 'active' : ''}" data-fx="${e.id}" title="${e.desc}" onclick="window.FavoriteMemoryEffects.setActiveEffect('${e.id}')">
+      <button type="button" class="fav-fx-chip ${currentActiveEffect === e.id ? 'active' : ''}" data-fx="${e.id}" title="${e.desc}">
         <span>${e.icon}</span> <span>${e.name.replace(/^[^\s]+\s/, '')}</span>
       </button>
     `).join('');
+
+    initBarSwipeEngine(bar);
   }
 
   // Cleanup all timers and memory
