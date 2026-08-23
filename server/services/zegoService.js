@@ -66,13 +66,14 @@ function generateToken04(appId, userId, secret, effectiveTimeInSeconds = 3600, p
 function getZegoConfig(user, roomId = '') {
   const appId = parseInt(env.ZEGO_APP_ID || process.env.ZEGO_APP_ID || process.env.ZEGOCLOUD_APP_ID || '0', 10);
   const secret = (env.ZEGO_SERVER_SECRET || process.env.ZEGO_SERVER_SECRET || process.env.ZEGOCLOUD_SERVER_SECRET || '').trim();
+  const appSign = (env.ZEGO_APP_SIGN || process.env.ZEGO_APP_SIGN || process.env.ZEGOCLOUD_APP_SIGN || '').trim();
 
-  const isConfigured = Boolean(appId && secret && secret.length === 32);
+  const isConfigured = Boolean(appId && (appSign || (secret && secret.length === 32)));
   const userId = (user?.username || user?.id || 'guest_user').toLowerCase();
   const userName = user?.displayName || user?.username || 'Member';
 
   let token = '';
-  if (isConfigured) {
+  if (appId && secret && secret.length === 32) {
     try {
       token = generateToken04(appId, userId, secret, 3600 * 2); // 2 hours validity
     } catch (err) {
@@ -84,6 +85,7 @@ function getZegoConfig(user, roomId = '') {
     configured: isConfigured,
     appId: isConfigured ? appId : 0,
     token,
+    appSign,
     userId,
     userName,
     roomId: roomId || `room_${Date.now()}`
