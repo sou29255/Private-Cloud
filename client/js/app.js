@@ -783,9 +783,9 @@ async function handleLogout() {
   if (sidebar) sidebar.classList.remove('open');
   if (backdrop) backdrop.classList.remove('active');
 
-  // Completely reset & purge AI Chatbot history silently for fresh session
+  // Completely reset & purge AI Chatbot history for fresh session
   if (typeof clearChatHistory === 'function') {
-    clearChatHistory(true);
+    clearChatHistory();
   }
   if (typeof endCurrentCall === 'function') {
     endCurrentCall();
@@ -5943,7 +5943,7 @@ function closeChatbot() {
   playModalCloseSound();
 }
 
-function clearChatHistory(silent = false) {
+function clearChatHistory() {
   const body = document.getElementById('ai-messages-body');
   if (!body) return;
   body.innerHTML = `
@@ -5958,9 +5958,6 @@ function clearChatHistory(silent = false) {
       </div>
     </div>
   `;
-  if (!silent) {
-    showToast('Chat history cleared.', 'info');
-  }
 }
 
 function handleAiChatSubmit(e) {
